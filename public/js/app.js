@@ -88,6 +88,9 @@ const app = Vue.createApp({
         },
         goToHistory() {
             window.location.href = '/history';
+        },
+        goToLogin() {
+            window.location.href = '/login';
         }
     }
 });

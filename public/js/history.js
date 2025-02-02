@@ -20,6 +20,24 @@ const historyApp = Vue.createApp({
         },
         formatCurrency(amount) {
             return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(amount);
+        },
+        async deleteRecord(id) {
+            if (!confirm('このレコードを削除してもよろしいですか？')) {
+                return;
+            }
+            try {
+                const response = await fetch(`/api/history/${id}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    this.records = this.records.filter(record => record.id !== id);
+                } else {
+                    alert('レコードの削除中にエラーが発生しました');
+                }
+            } catch (error) {
+                console.error('Error deleting record:', error);
+                alert('レコードの削除中にエラーが発生しました');
+            }
         }
     }
 });

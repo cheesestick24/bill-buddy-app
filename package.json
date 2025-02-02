@@ -8,10 +8,11 @@
     "start": "node server.mjs"
   },
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "express": "^4.17.1",
-    "mssql": "^7.2.1"
+    "express-session": "^1.18.1",
+    "mssql": "^11.0.1"
   },
-  "devDependencies": {},
   "author": "",
   "license": "ISC"
 }

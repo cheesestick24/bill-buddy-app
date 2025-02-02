@@ -48,8 +48,11 @@
             <div class="mb-3">
                 <label class="form-label">相手の金額: {{ formatCurrency(calculatedAmounts.theirShare) }}</label>
             </div>
-            <button type="button" class="btn btn-primary" @click="saveData">データを保存</button>
-            <button type="button" class="btn btn-secondary" @click="goToHistory">履歴を見る</button>
+            <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-primary" @click="saveData">データを保存</button>
+                <button type="button" class="btn btn-secondary" @click="goToHistory">履歴を見る</button>
+                <button type="button" class="btn btn-secondary" @click="goToLogin">ログイン</button>
+            </div>
             <!-- <button type="button" class="btn btn-primary" @click="shareViaLine">LINEで共有</button> -->
         </form>
         <div v-if="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
