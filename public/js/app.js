@@ -21,6 +21,11 @@ const app = Vue.createApp({
                 myShare: this.applyRounding(myShare),
                 theirShare: this.applyRounding(theirShare)
             };
+        },
+        formattedDate() {
+            const date = new Date(this.date);
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            return date.toLocaleDateString('ja-JP', options);
         }
     },
     methods: {
@@ -34,6 +39,9 @@ const app = Vue.createApp({
                 roundedAmount = Math.floor(amount / 100) * 100;
             }
             return roundedAmount;
+        },
+        formatCurrency(amount) {
+            return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(amount);
         },
         async saveData() {
             if (this.totalAmount <= 0) {
@@ -77,6 +85,9 @@ const app = Vue.createApp({
             } else {
                 return '自分が多め';
             }
+        },
+        goToHistory() {
+            window.location.href = '/history';
         }
     }
 });

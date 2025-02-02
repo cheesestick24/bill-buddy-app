@@ -35,6 +35,21 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+app.get('/history', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'history.html'));
+});
+
+app.get('/api/history', async (req, res) => {
+    try {
+        const pool = await sql.connect(config);
+        const result = await pool.request().query('SELECT * FROM BillRecords ORDER BY createdAt DESC');
+        res.json(result.recordset);
+    } catch (err) {
+        console.error('Error fetching data:', err);
+        res.status(500).send('Error fetching data');
+    }
+});
+
 app.post('/save', async (req, res) => {
     const { date, totalAmount, location, memo, splitRatio, roundingOption, myShare, theirShare } = req.body;
     try {

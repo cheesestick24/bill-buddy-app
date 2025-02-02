@@ -15,6 +15,7 @@
             <div class="mb-3">
                 <label for="date" class="form-label">日付</label>
                 <input type="date" v-model="date" class="form-control" id="date">
+                <div>{{ formattedDate }}</div>
             </div>
             <div class="mb-3">
                 <label for="totalAmount" class="form-label">合計金額</label>
@@ -42,12 +43,13 @@
                 </select>
             </div>
             <div class="mb-3">
-                <label class="form-label">私の金額: {{ calculatedAmounts.myShare }} 円</label>
+                <label class="form-label">私の金額: {{ formatCurrency(calculatedAmounts.myShare) }}</label>
             </div>
             <div class="mb-3">
-                <label class="form-label">相手の金額: {{ calculatedAmounts.theirShare }} 円</label>
+                <label class="form-label">相手の金額: {{ formatCurrency(calculatedAmounts.theirShare) }}</label>
             </div>
             <button type="button" class="btn btn-primary" @click="saveData">データを保存</button>
+            <button type="button" class="btn btn-secondary" @click="goToHistory">履歴を見る</button>
             <!-- <button type="button" class="btn btn-primary" @click="shareViaLine">LINEで共有</button> -->
         </form>
         <div v-if="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
