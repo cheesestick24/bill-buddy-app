@@ -33,11 +33,44 @@ const app = Vue.createApp({
             }
             return roundedAmount;
         },
-        // shareViaLine() {
-        //     const message = `場所: ${this.location}\nメモ: ${this.memo}\n私の金額: ${this.calculatedAmounts.myShare}\n相手の金額: ${this.calculatedAmounts.theirShare}`;
-        //     const url = `https://line.me/R/msg/text/?${encodeURIComponent(message)}`;
-        //     window.open(url, '_blank');
-        // }
+        async saveData() {
+            const data = {
+                date: this.date,
+                totalAmount: this.totalAmount,
+                location: this.location,
+                memo: this.memo,
+                splitRatio: this.splitRatio,
+                roundingOption: this.getRoundingOptionInJapanese(),
+                myShare: this.calculatedAmounts.myShare,
+                theirShare: this.calculatedAmounts.theirShare
+            };
+            try {
+                const response = await fetch('/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (response.ok) {
+                    alert('データが正常に保存されました');
+                } else {
+                    alert('データの保存中にエラーが発生しました');
+                }
+            } catch (error) {
+                console.error('Error saving data:', error);
+                alert('データの保存中にエラーが発生しました');
+            }
+        },
+        getRoundingOptionInJapanese() {
+            if (this.roundingOption === 'even') {
+                return '四捨五入';
+            } else if (this.roundingOption === 'more') {
+                return '相手が多め';
+            } else {
+                return '自分が多め';
+            }
+        }
     }
 });
 
