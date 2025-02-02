@@ -8,7 +8,9 @@ const app = Vue.createApp({
             memo: '',
             date: new Date().toISOString().split('T')[0],
             splitRatio: 50,
-            roundingOption: 'even'
+            roundingOption: 'even',
+            saveMessage: '',
+            errorMessage: ''
         };
     },
     computed: {
@@ -34,6 +36,11 @@ const app = Vue.createApp({
             return roundedAmount;
         },
         async saveData() {
+            if (this.totalAmount <= 0) {
+                this.errorMessage = '合計金額は0円以上でなければなりません';
+                return;
+            }
+            this.errorMessage = '';
             const data = {
                 date: this.date,
                 totalAmount: this.totalAmount,
@@ -53,13 +60,13 @@ const app = Vue.createApp({
                     body: JSON.stringify(data)
                 });
                 if (response.ok) {
-                    alert('データが正常に保存されました');
+                    this.saveMessage = 'データが正常に保存されました';
                 } else {
-                    alert('データの保存中にエラーが発生しました');
+                    this.saveMessage = 'データの保存中にエラーが発生しました';
                 }
             } catch (error) {
                 console.error('Error saving data:', error);
-                alert('データの保存中にエラーが発生しました');
+                this.saveMessage = 'データの保存中にエラーが発生しました';
             }
         },
         getRoundingOptionInJapanese() {
