@@ -3,7 +3,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import sql from 'mssql';
 import session from 'express-session';
-import bcrypt from 'bcrypt';
+import crypto from 'crypto';
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,6 +25,14 @@ const config = {
         enableArithAbort: true
     }
 };
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
 
 sql.connect(config).then(pool => {
     if (pool.connected) {
@@ -56,6 +68,10 @@ app.get('/history', (req, res) => {
         return res.redirect('/login');
     }
     res.sendFile(path.join(__dirname, 'public', 'history.html'));
+});
+
+app.get('/otp', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'otp.html'));
 });
 
 app.get('/api/history', async (req, res) => {
@@ -121,18 +137,39 @@ app.delete('/api/history/:id', async (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
+    const { usernameOrEmail } = req.body;
     try {
         const pool = await sql.connect(config);
         const result = await pool.request()
-            .input('username', sql.NVarChar, username)
-            .query('SELECT * FROM Users WHERE username = @username');
+            .input('usernameOrEmail', sql.NVarChar, usernameOrEmail)
+            .query('SELECT * FROM Users WHERE username = @usernameOrEmail OR email = @usernameOrEmail');
         const user = result.recordset[0];
-        if (user && await bcrypt.compare(password, user.password)) {
-            req.session.userId = user.id;
-            res.status(200).send('Login successful');
+        if (user) {
+            const otp = crypto.randomBytes(3).toString('hex');
+            const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+            await pool.request()
+                .input('userId', sql.Int, user.id)
+                .input('otp', sql.NVarChar, otp)
+                .input('expiresAt', sql.DateTime, expiresAt)
+                .query('INSERT INTO OTP (userId, otp, expiresAt) VALUES (@userId, @otp, @expiresAt)');
+
+            const mailOptions = {
+                from: process.env.EMAIL_USER,
+                to: user.email,
+                subject: 'Your OTP Code',
+                text: `Your OTP code is ${otp}`
+            };
+
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.error('Error sending email:', error);
+                    return res.status(500).send('Error sending OTP email');
+                }
+                console.log('Email sent:', user.email);
+                res.status(200).send('OTP sent to your email');
+            });
         } else {
-            res.status(401).send('Invalid credentials');
+            res.status(404).send('User not found, please register');
         }
     } catch (err) {
         console.error('Error during login:', err);
@@ -140,18 +177,45 @@ app.post('/login', async (req, res) => {
     }
 });
 
+app.post('/verify-otp', async (req, res) => {
+    const { usernameOrEmail, otp } = req.body;
+    try {
+        const pool = await sql.connect(config);
+        const result = await pool.request()
+            .input('usernameOrEmail', sql.NVarChar, usernameOrEmail)
+            .query('SELECT * FROM Users WHERE username = @usernameOrEmail OR email = @usernameOrEmail');
+        const user = result.recordset[0];
+        if (user) {
+            const otpResult = await pool.request()
+                .input('userId', sql.Int, user.id)
+                .input('otp', sql.NVarChar, otp)
+                .query('SELECT * FROM OTP WHERE userId = @userId AND otp = @otp AND expiresAt > GETDATE()');
+            if (otpResult.recordset.length > 0) {
+                req.session.userId = user.id;
+                res.status(200).send('Login successful');
+            } else {
+                res.status(401).send('Invalid or expired OTP');
+            }
+        } else {
+            res.status(401).send('Invalid username or email');
+        }
+    } catch (err) {
+        console.error('Error during OTP verification:', err);
+        res.status(500).send('Error during OTP verification');
+    }
+});
+
 app.post('/register', async (req, res) => {
-    const { username, password } = req.body;
-    if (!username || !password) {
-        return res.status(400).send('Username and password are required');
+    const { username, email } = req.body;
+    if (!username || !email) {
+        return res.status(400).send('Username and email are required');
     }
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
         const pool = await sql.connect(config);
         const result = await pool.request()
             .input('username', sql.NVarChar, username)
-            .input('password', sql.NVarChar, hashedPassword)
-            .query('INSERT INTO Users (username, password) OUTPUT INSERTED.id VALUES (@username, @password)');
+            .input('email', sql.NVarChar, email)
+            .query('INSERT INTO Users (username, email) OUTPUT INSERTED.id VALUES (@username, @email)');
 
         const userId = result.recordset[0].id;
         req.session.userId = userId;

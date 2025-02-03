@@ -1,32 +1,43 @@
 const loginApp = Vue.createApp({
     data() {
         return {
-            username: '',
-            password: '',
+            usernameOrEmail: '',
             errorMessage: ''
         };
     },
     methods: {
-        async login() {
+        async sendOtp() {
             try {
                 const response = await fetch('/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ username: this.username, password: this.password })
+                    body: JSON.stringify({ usernameOrEmail: this.usernameOrEmail })
                 });
                 if (response.ok) {
-                    window.location.href = '/';
+                    console.log('OTP sent successfully');
+                    window.location.href = `/otp?usernameOrEmail=${encodeURIComponent(this.usernameOrEmail)}`;
+                } else if (response.status === 404) {
+                    console.log('User not found, redirecting to register');
+                    window.location.href = '/register';
                 } else {
-                    this.errorMessage = 'ログインに失敗しました';
+                    const errorText = await response.text();
+                    this.errorMessage = `OTPの送信に失敗しました: ${errorText}`;
+                    document.getElementById('errorMessage').style.display = 'block';
                 }
             } catch (error) {
-                console.error('Error during login:', error);
-                this.errorMessage = 'ログインに失敗しました';
+                console.error('Error during OTP sending:', error);
+                this.errorMessage = 'OTPの送信に失敗しました';
+                document.getElementById('errorMessage').style.display = 'block';
             }
         }
     }
 });
 
-loginApp.mount('#login');
+const appInstance = loginApp.mount('#login');
+
+document.getElementById('loginForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    appInstance.sendOtp();
+});
