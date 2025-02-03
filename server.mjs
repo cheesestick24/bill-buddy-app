@@ -56,22 +56,22 @@ app.get('/', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+    res.sendFile(path.join(__dirname, 'public', 'html/login.html'));
 });
 
 app.get('/register', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'register.html'));
+    res.sendFile(path.join(__dirname, 'public', 'html/register.html'));
 });
 
 app.get('/history', (req, res) => {
     if (!req.session.userId) {
         return res.redirect('/login');
     }
-    res.sendFile(path.join(__dirname, 'public', 'history.html'));
+    res.sendFile(path.join(__dirname, 'public', 'html/history.html'));
 });
 
 app.get('/otp', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'otp.html'));
+    res.sendFile(path.join(__dirname, 'public', 'html/otp.html'));
 });
 
 app.get('/api/history', async (req, res) => {
