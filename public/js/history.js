@@ -32,11 +32,12 @@ const historyApp = Vue.createApp({
                 if (response.ok) {
                     this.records = this.records.filter(record => record.id !== id);
                 } else {
-                    alert('レコードの削除中にエラーが発生しました');
+                    const errorText = await response.text();
+                    alert(`レコードの削除中にエラーが発生しました: ${errorText}`);
                 }
             } catch (error) {
                 console.error('Error deleting record:', error);
-                alert('レコードの削除中にエラーが発生しました');
+                alert(`レコードの削除中にエラーが発生しました: ${error.message}`);
             }
         },
         goToHome() {

@@ -181,7 +181,7 @@ app.post('/login', async (req, res) => {
         }
     } catch (err) {
         console.error('Error during login:', err);
-        res.status(500).send('Error during login');
+        res.status(500).send(`Error during login: ${err.message}`);
     }
 });
 
@@ -255,6 +255,7 @@ app.get('/api/check-login', async (req, res) => {
 app.post('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
+            console.error('Error during logout:', err);
             return res.status(500).send('Error during logout');
         }
         res.redirect('/html/logout.html'); // パスを修正

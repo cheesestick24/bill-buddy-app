@@ -71,11 +71,12 @@ const app = Vue.createApp({
                 if (response.ok) {
                     this.saveMessage = 'データが正常に保存されました';
                 } else {
-                    this.saveMessage = 'データの保存中にエラーが発生しました';
+                    const errorText = await response.text();
+                    this.saveMessage = `データの保存中にエラーが発生しました: ${errorText}`;
                 }
             } catch (error) {
                 console.error('Error saving data:', error);
-                this.saveMessage = 'データの保存中にエラーが発生しました';
+                this.saveMessage = `データの保存中にエラーが発生しました: ${error.message}`;
             }
         },
         getRoundingOptionInJapanese() {
@@ -118,7 +119,8 @@ const app = Vue.createApp({
                 if (response.ok) {
                     window.location.href = '/html/logout.html'; // ログアウト後にログアウト画面に遷移
                 } else {
-                    console.error('Error during logout');
+                    const errorText = await response.text();
+                    console.error(`Error during logout: ${errorText}`);
                 }
             } catch (error) {
                 console.error('Error during logout:', error);
