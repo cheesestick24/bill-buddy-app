@@ -93,7 +93,7 @@ app.get('/api/history', async (req, res) => {
         res.json(result.recordset);
     } catch (err) {
         console.error('Error fetching data:', err);
-        res.status(500).send('Error fetching data');
+        res.status(500).send(`Error fetching data: ${err.message}`);
     }
 });
 
@@ -121,7 +121,7 @@ app.post('/save', async (req, res) => {
         res.status(200).send('Data saved successfully');
     } catch (err) {
         console.error('Error saving data:', err);
-        res.status(500).send('Error saving data');
+        res.status(500).send(`Error saving data: ${err.message}`);
     }
 });
 
@@ -139,7 +139,7 @@ app.delete('/api/history/:id', async (req, res) => {
         res.status(200).send('Record deleted successfully');
     } catch (err) {
         console.error('Error deleting record:', err);
-        res.status(500).send('Error deleting record');
+        res.status(500).send(`Error deleting record: ${err.message}`);
     }
 });
 
@@ -170,7 +170,7 @@ app.post('/login', async (req, res) => {
             transporter.sendMail(mailOptions, (error, info) => {
                 if (error) {
                     console.error('Error sending email:', error);
-                    return res.status(500).send('Error sending OTP email');
+                    return res.status(500).send(`Error sending OTP email: ${error.message}`);
                 }
                 console.log('Email sent:', user.email);
                 console.log('OTP:', otp); // 開発用に一時的にコンソールに出力
@@ -209,7 +209,7 @@ app.post('/verify-otp', async (req, res) => {
         }
     } catch (err) {
         console.error('Error during OTP verification:', err);
-        res.status(500).send('Error during OTP verification');
+        res.status(500).send(`Error during OTP verification: ${err.message}`);
     }
 });
 
@@ -230,7 +230,7 @@ app.post('/register', async (req, res) => {
         res.status(200).send('User registered and logged in successfully');
     } catch (err) {
         console.error('Error during registration:', err);
-        res.status(500).send('Error during registration');
+        res.status(500).send(`Error during registration: ${err.message}`);
     }
 });
 
@@ -245,7 +245,7 @@ app.get('/api/check-login', async (req, res) => {
             res.status(200).json({ username: user.username });
         } catch (err) {
             console.error('Error fetching user data:', err);
-            res.status(500).send('Error fetching user data');
+            res.status(500).send(`Error fetching user data: ${err.message}`);
         }
     } else {
         res.status(401).send('Not logged in');
@@ -256,7 +256,7 @@ app.post('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
             console.error('Error during logout:', err);
-            return res.status(500).send('Error during logout');
+            return res.status(500).send(`Error during logout: ${err.message}`);
         }
         res.redirect('/html/logout.html'); // パスを修正
     });
