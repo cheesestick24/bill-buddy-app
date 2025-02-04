@@ -51,6 +51,10 @@ app.use(session({
     cookie: { secure: false } // secure: true for HTTPS
 }));
 
+app.get('/favicon.ico', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'img', 'money_warikan_business.ico')); // アイコンのパスを設定
+});
+
 app.get('/', (req, res) => {
     if (!req.session.userId) {
         return res.redirect('/login');
