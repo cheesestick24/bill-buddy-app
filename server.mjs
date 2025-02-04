@@ -167,12 +167,13 @@ app.post('/login', async (req, res) => {
                 text: `Your OTP code is ${otp}`
             };
 
+            console.log('Sending email to:', user.email); // 送信先のメールアドレスをログに出力
             transporter.sendMail(mailOptions, (error, info) => {
                 if (error) {
                     console.error('Error sending email:', error);
                     return res.status(500).send(`Error sending OTP email: ${error.message}`);
                 }
-                console.log('Email sent:', user.email);
+                console.log('Email sent:', info.response); // 送信成功時のレスポンスをログに出力
                 console.log('OTP:', otp); // 開発用に一時的にコンソールに出力
                 res.status(200).send('OTP sent to your email');
             });
