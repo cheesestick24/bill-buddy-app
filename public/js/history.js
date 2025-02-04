@@ -38,6 +38,9 @@ const historyApp = Vue.createApp({
                 console.error('Error deleting record:', error);
                 alert('レコードの削除中にエラーが発生しました');
             }
+        },
+        goToHome() {
+            window.location.href = '/';
         }
     }
 });
