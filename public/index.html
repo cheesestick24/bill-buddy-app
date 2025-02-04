@@ -10,7 +10,10 @@
 
 <body>
     <div id="app" class="container mt-5">
-        <h1 class="mb-4">割り勘アプリ</h1>
+        <div class="d-flex justify-content-between">
+            <h1 class="mb-4">割り勘アプリ</h1>
+            <div v-if="username" class="align-self-center">ようこそ、{{ username }}さん</div>
+        </div>
         <form>
             <div class="mb-3">
                 <label for="date" class="form-label">日付</label>
@@ -51,7 +54,7 @@
             <div class="d-flex justify-content-between">
                 <button type="button" class="btn btn-primary" @click="saveData">データを保存</button>
                 <button type="button" class="btn btn-secondary" @click="goToHistory">履歴を見る</button>
-                <button type="button" class="btn btn-secondary" @click="goToLogin">ログイン</button>
+                <button type="button" class="btn btn-secondary" @click="logout">ログアウト</button>
             </div>
             <!-- <button type="button" class="btn btn-primary" @click="shareViaLine">LINEで共有</button> -->
         </form>

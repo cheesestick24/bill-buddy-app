@@ -10,7 +10,8 @@ const app = Vue.createApp({
             splitRatio: 50,
             roundingOption: 'even',
             saveMessage: '',
-            errorMessage: ''
+            errorMessage: '',
+            username: '' // 追加
         };
     },
     computed: {
@@ -91,7 +92,41 @@ const app = Vue.createApp({
         },
         goToLogin() {
             window.location.href = '/login';
+        },
+        async checkLogin() {
+            try {
+                const response = await fetch('/api/check-login');
+                if (response.ok) {
+                    const data = await response.json();
+                    this.username = data.username; // ユーザー名を設定
+                } else {
+                    this.goToLogin();
+                }
+            } catch (error) {
+                console.error('Error checking login status:', error);
+                this.goToLogin();
+            }
+        },
+        async logout() {
+            try {
+                const response = await fetch('/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    window.location.href = '/html/logout.html'; // ログアウト後にログアウト画面に遷移
+                } else {
+                    console.error('Error during logout');
+                }
+            } catch (error) {
+                console.error('Error during logout:', error);
+            }
         }
+    },
+    mounted() {
+        this.checkLogin();
     }
 });
 

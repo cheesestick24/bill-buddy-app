@@ -16,10 +16,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const config = {
-    user: 'bill-buddy',
-    password: 'Bb20250202',
-    server: 'db-server-bill-buddy.database.windows.net',
-    database: 'db-bill-buddy',
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    server: process.env.DB_SERVER,
+    database: process.env.DB_DATABASE,
     options: {
         encrypt: true,
         enableArithAbort: true
@@ -52,7 +52,10 @@ app.use(session({
 }));
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    if (!req.session.userId) {
+        return res.redirect('/login');
+    }
+    res.sendFile(path.join(__dirname, 'public', 'html', 'index.html'));
 });
 
 app.get('/login', (req, res) => {
@@ -166,6 +169,7 @@ app.post('/login', async (req, res) => {
                     return res.status(500).send('Error sending OTP email');
                 }
                 console.log('Email sent:', user.email);
+                console.log('OTP:', otp); // 開発用に一時的にコンソールに出力
                 res.status(200).send('OTP sent to your email');
             });
         } else {
@@ -224,6 +228,33 @@ app.post('/register', async (req, res) => {
         console.error('Error during registration:', err);
         res.status(500).send('Error during registration');
     }
+});
+
+app.get('/api/check-login', async (req, res) => {
+    if (req.session.userId) {
+        try {
+            const pool = await sql.connect(config);
+            const result = await pool.request()
+                .input('userId', sql.Int, req.session.userId)
+                .query('SELECT username FROM Users WHERE id = @userId');
+            const user = result.recordset[0];
+            res.status(200).json({ username: user.username });
+        } catch (err) {
+            console.error('Error fetching user data:', err);
+            res.status(500).send('Error fetching user data');
+        }
+    } else {
+        res.status(401).send('Not logged in');
+    }
+});
+
+app.post('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            return res.status(500).send('Error during logout');
+        }
+        res.redirect('/html/logout.html'); // パスを修正
+    });
 });
 
 app.listen(PORT, () => {
