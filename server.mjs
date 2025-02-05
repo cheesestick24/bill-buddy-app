@@ -48,7 +48,10 @@ app.use(session({
     secret: 'your-secret-key',
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false } // secure: true for HTTPS
+    cookie: {
+        secure: false, // secure: true for HTTPS
+        maxAge: 30 * 24 * 60 * 60 * 1000 // 1ヶ月 (30日) の持続時間
+    }
 }));
 
 app.get('/favicon.ico', (req, res) => {

@@ -125,10 +125,20 @@ const app = Vue.createApp({
             } catch (error) {
                 console.error('Error during logout:', error);
             }
+        },
+        keepSessionAlive() {
+            setInterval(async () => {
+                try {
+                    await fetch('/api/check-login');
+                } catch (error) {
+                    console.error('Error keeping session alive:', error);
+                }
+            }, 15 * 60 * 1000); // 15分ごとにリクエストを送信
         }
     },
     mounted() {
         this.checkLogin();
+        this.keepSessionAlive(); // セッションを延長するためのリクエストを開始
     }
 });
 
