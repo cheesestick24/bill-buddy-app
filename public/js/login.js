@@ -2,11 +2,13 @@ const loginApp = Vue.createApp({
     data() {
         return {
             usernameOrEmail: '',
-            errorMessage: ''
+            errorMessage: '',
+            isLoading: false // ローディング状態を追加
         };
     },
     methods: {
         async sendOtp() {
+            this.isLoading = true; // ローディング状態を有効にする
             try {
                 const response = await fetch('/login', {
                     method: 'POST',
