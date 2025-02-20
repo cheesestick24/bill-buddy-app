@@ -26,3 +26,10 @@ body {
     pointer-events: none;
     opacity: 0.5;
 }
+
+/* チェックボックスのスタイルを整える */
+input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle; /* チェックボックスを中央に配置 */
+}

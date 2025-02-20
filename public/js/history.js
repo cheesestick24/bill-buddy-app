@@ -1,7 +1,8 @@
 const historyApp = Vue.createApp({
     data() {
         return {
-            records: []
+            records: [],
+            selectedRecords: []
         };
     },
     async created() {
@@ -42,6 +43,20 @@ const historyApp = Vue.createApp({
         },
         goToHome() {
             window.location.href = '/';
+        },
+        updateSelectedData() {
+            this.selectedRecords = this.records.filter(record => record.selected);
+        }
+    },
+    computed: {
+        totalAmount() {
+            return this.selectedRecords.reduce((sum, record) => sum + parseFloat(record.totalAmount), 0);
+        },
+        myShare() {
+            return this.selectedRecords.reduce((sum, record) => sum + parseFloat(record.myShare), 0);
+        },
+        theirShare() {
+            return this.selectedRecords.reduce((sum, record) => sum + parseFloat(record.theirShare), 0);
         }
     }
 });
