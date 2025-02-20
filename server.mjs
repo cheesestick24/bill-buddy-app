@@ -66,6 +66,13 @@ app.get('/', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
+    if (process.env.DEV_MODE === 'development') {
+        // 開発モードではOTP認証をスキップ
+        req.session.userId = process.env.DEV_ID;
+        console.log('User logged in:', req.session.userId);
+        return res.redirect('/html/history.html');
+    }
+
     res.sendFile(path.join(__dirname, 'public', 'html/login.html'));
 });
 
