@@ -33,3 +33,20 @@ input[type="checkbox"] {
     height: 20px;
     vertical-align: middle; /* チェックボックスを中央に配置 */
 }
+
+#message {
+    color: green;
+    font-weight: bold;
+    margin-top: 10px;
+    display: none; /* 初期状態では非表示 */
+}
+
+#message.show {
+    display: block; /* メッセージがあるときに表示 */
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between; /* ボタンを左右に配置 */
+    margin-top: 20px;
+}

@@ -2,7 +2,8 @@ const historyApp = Vue.createApp({
     data() {
         return {
             records: [],
-            selectedRecords: []
+            selectedRecords: [],
+            message: ''
         };
     },
     async created() {
@@ -46,6 +47,28 @@ const historyApp = Vue.createApp({
         },
         updateSelectedData() {
             this.selectedRecords = this.records.filter(record => record.selected);
+            this.message = '';
+        },
+        copyToClipboard() {
+            if (this.selectedRecords.length === 0) {
+                this.message = '選択されたデータがありません';
+                return;
+            }
+            const totalAmount = this.formatCurrency(this.totalAmount);
+            const myShare = this.formatCurrency(this.myShare);
+            const theirShare = this.formatCurrency(this.theirShare);
+            const textToCopy = `
+                合計金額: ${totalAmount}
+                私の金額: ${myShare}
+                相手の金額: ${theirShare}
+            `;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                this.message = 'クリップボードにコピーしました';
+            }).catch(err => {
+                console.error('Error copying to clipboard:', err);
+                this.message = 'クリップボードへのコピーに失敗しました';
+            });
         }
     },
     computed: {
