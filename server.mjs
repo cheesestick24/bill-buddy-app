@@ -66,6 +66,13 @@ app.get('/', (req, res) => {
 });
 
 app.get('/login', (req, res) => {
+    if (process.env.DEV_MODE === 'development') {
+        // 開発モードではOTP認証をスキップ
+        req.session.userId = process.env.DEV_ID;
+        console.log('User logged in:', req.session.userId);
+        return res.redirect('/html/history.html');
+    }
+
     res.sendFile(path.join(__dirname, 'public', 'html/login.html'));
 });
 
@@ -155,12 +162,6 @@ app.post('/login', async (req, res) => {
             .query('SELECT * FROM Users WHERE username = @usernameOrEmail OR email = @usernameOrEmail');
         const user = result.recordset[0];
         if (user) {
-            if (process.env.NODE_ENV === 'development') {
-                // 開発モードではOTP認証をスキップ
-                req.session.userId = user.id;
-                return res.status(200).send('Login successful (OTP skipped in development mode)');
-            }
-
             const otp = crypto.randomBytes(3).toString('hex');
             const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
             await pool.request()
