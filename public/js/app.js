@@ -70,6 +70,7 @@ const app = Vue.createApp({
                 });
                 if (response.ok) {
                     this.saveMessage = 'データが正常に保存されました';
+                    this.resetForm();
                 } else {
                     const errorText = await response.text();
                     this.saveMessage = `データの保存中にエラーが発生しました: ${errorText}`;
@@ -134,6 +135,18 @@ const app = Vue.createApp({
                     console.error('Error keeping session alive:', error);
                 }
             }, 15 * 60 * 1000); // 15分ごとにリクエストを送信
+        },
+        resetForm() {
+            this.myAmount = 0;
+            this.theirAmount = 0;
+            this.totalAmount = 0;
+            this.location = '';
+            this.memo = '';
+            this.date = new Date().toISOString().split('T')[0];
+            this.splitRatio = 50;
+            this.roundingOption = 'even';
+            this.saveMessage = '';
+            this.errorMessage = '';
         }
     },
     mounted() {
