@@ -8,7 +8,7 @@ const app = Vue.createApp({
             memo: '',
             date: new Date().toISOString().split('T')[0],
             splitRatio: 50,
-            roundingOption: 'even',
+            roundingOption: '',
             saveMessage: '',
             errorMessage: '',
             username: '', // 追加
@@ -19,6 +19,12 @@ const app = Vue.createApp({
     },
     computed: {
         calculatedAmounts() {
+            if (this.roundingOption === '') {
+                return {
+                    myShare: '',
+                    theirShare: ''
+                };
+            }
             const myShare = (this.totalAmount * (this.splitRatio / 100)).toFixed(2);
             const theirShare = (this.totalAmount * ((100 - this.splitRatio) / 100)).toFixed(2);
             return {
@@ -58,10 +64,10 @@ const app = Vue.createApp({
                 totalAmount: this.totalAmount,
                 location: this.location,
                 memo: this.memo,
-                splitRatio: this.splitRatio,
-                roundingOption: this.getRoundingOptionInJapanese(),
-                myShare: this.calculatedAmounts.myShare,
-                theirShare: this.calculatedAmounts.theirShare,
+                splitRatio: this.roundingOption === '' ? '' : this.splitRatio,
+                roundingOption: this.roundingOption,
+                myShare: this.roundingOption === '' ? '' : this.calculatedAmounts.myShare,
+                theirShare: this.roundingOption === '' ? '' : this.calculatedAmounts.theirShare,
                 isSettled: this.isSettled,
                 category: this.category // 追加
             };
@@ -149,7 +155,7 @@ const app = Vue.createApp({
             this.memo = '';
             this.date = new Date().toISOString().split('T')[0];
             this.splitRatio = 50;
-            this.roundingOption = 'even';
+            this.roundingOption = '';
             this.saveMessage = '';
             this.errorMessage = '';
             this.category = ''; // デフォルト値を空白に変更

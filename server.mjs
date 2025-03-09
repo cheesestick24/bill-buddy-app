@@ -120,10 +120,10 @@ app.post('/save', async (req, res) => {
             .input('totalAmount', sql.Decimal(10, 2), totalAmount)
             .input('location', sql.NVarChar, location)
             .input('memo', sql.NVarChar, memo)
-            .input('splitRatio', sql.Int, splitRatio)
-            .input('roundingOption', sql.NVarChar, roundingOption)
-            .input('myShare', sql.Decimal(10, 2), myShare)
-            .input('theirShare', sql.Decimal(10, 2), theirShare)
+            .input('splitRatio', sql.Int, splitRatio || null)
+            .input('roundingOption', sql.NVarChar, roundingOption || null)
+            .input('myShare', sql.Decimal(10, 2), myShare || null)
+            .input('theirShare', sql.Decimal(10, 2), theirShare || null)
             .input('isSettled', sql.Bit, isSettled)
             .input('category', sql.NVarChar, category) // 追加
             .query(`
