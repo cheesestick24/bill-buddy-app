@@ -12,7 +12,8 @@ const app = Vue.createApp({
             saveMessage: '',
             errorMessage: '',
             username: '', // 追加
-            isSettled: false
+            isSettled: false,
+            showOptionalFields: false // 追加
         };
     },
     computed: {
@@ -149,6 +150,9 @@ const app = Vue.createApp({
             this.roundingOption = 'even';
             this.saveMessage = '';
             this.errorMessage = '';
+        },
+        toggleOptionalFields() {
+            this.showOptionalFields = !this.showOptionalFields;
         }
     },
     mounted() {

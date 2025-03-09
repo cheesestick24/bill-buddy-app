@@ -33,23 +33,31 @@
                 <textarea v-model="memo" class="form-control" id="memo"></textarea>
             </div>
             <div class="mb-3">
-                <label for="splitRatio" class="form-label">割り勘の割合</label>
-                <input type="range" v-model="splitRatio" class="form-range" id="splitRatio" min="0" max="100" step="5">
-                <div>私: {{ splitRatio }}% 相手: {{ 100 - splitRatio }}%</div>
+                <button type="button" class="btn btn-link" @click="toggleOptionalFields">
+                    オプション項目を{{ showOptionalFields ? '非表示' : '表示' }}にする
+                </button>
             </div>
-            <div class="mb-3">
-                <label class="form-label">割合オプション</label>
-                <select v-model="roundingOption" class="form-select">
-                    <option value="even">四捨五入</option>
-                    <option value="more">相手が多め</option>
-                    <option value="less">自分が多め</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">私の金額: {{ formatCurrency(calculatedAmounts.myShare) }}</label>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">相手の金額: {{ formatCurrency(calculatedAmounts.theirShare) }}</label>
+            <div v-if="showOptionalFields">
+                <div class="mb-3">
+                    <label for="splitRatio" class="form-label">割り勘の割合</label>
+                    <input type="range" v-model="splitRatio" class="form-range" id="splitRatio" min="0" max="100"
+                        step="5">
+                    <div>私: {{ splitRatio }}% 相手: {{ 100 - splitRatio }}%</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">割合オプション</label>
+                    <select v-model="roundingOption" class="form-select">
+                        <option value="even">四捨五入</option>
+                        <option value="more">相手が多め</option>
+                        <option value="less">自分が多め</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">私の金額: {{ formatCurrency(calculatedAmounts.myShare) }}</label>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">相手の金額: {{ formatCurrency(calculatedAmounts.theirShare) }}</label>
+                </div>
             </div>
             <div class="d-flex justify-content-between">
                 <button type="button" class="btn btn-primary" @click="saveData">データを保存</button>
