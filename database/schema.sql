@@ -28,5 +28,6 @@ CREATE TABLE OTP (
     otp NVARCHAR(6) NOT NULL,
     createdAt DATETIME DEFAULT GETDATE(),
     expiresAt DATETIME NOT NULL,
+    userAgent NVARCHAR(MAX),
     FOREIGN KEY (userId) REFERENCES Users(id)
 );

@@ -42,7 +42,7 @@
                         <div class="card-body">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" v-model="record.selected"
-                                    @change.stop="updateSelectedData">
+                                    @change="updateSelectedData" @change.stop="updateSelectedData">
                             </div>
                             <h5 class="card-title">{{ formatDate(record.date) }}</h5>
                             <div class="d-flex justify-content-between">
