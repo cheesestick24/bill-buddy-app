@@ -78,7 +78,8 @@
                     <li v-for="detail in popupDetails" :key="detail.date">{{ detail.date }} - {{ detail.totalAmount }} -
                         {{ detail.location }}</li>
                 </ul>
-                <p v-if="popupDetails.length > 0">合計金額: {{ formatCurrency(totalAmount) }}</p>
+                <p v-if="popupDetails.length > 0">金額: {{ formatCurrency(myShare) }} / {{ formatCurrency(theirShare) }}
+                </p>
                 <button class="btn btn-primary" @click="confirmPopup">はい</button>
                 <button v-if="showNoButton" class="btn btn-secondary" @click="closePopup">いいえ</button>
             </div>

@@ -2,7 +2,6 @@ const historyApp = Vue.createApp({
     data() {
         return {
             records: [],
-            selectedRecords: [],
             isSettled: false,
             filterOption: 'unsettled', // 追加
             showPopup: false, // ポップアップ表示用
@@ -31,13 +30,14 @@ const historyApp = Vue.createApp({
             return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(amount);
         },
         async deleteSelectedRecords() {
-            if (this.selectedRecords.length === 0) {
+            const selectedRecords = this.records.filter(record => record.selected);
+            if (selectedRecords.length === 0) {
                 this.showPopup = true;
                 this.popupMessage = '削除するデータが選択されていません';
                 this.showNoButton = false;
                 return;
             }
-            const idsToDelete = this.selectedRecords
+            const idsToDelete = selectedRecords
                 .filter(record => !record.isSettled) // 精算済みのレコードを除外
                 .map(record => record.id);
             if (idsToDelete.length === 0) {
@@ -60,8 +60,6 @@ const historyApp = Vue.createApp({
                     });
                     if (response.ok) {
                         this.records = this.records.filter(record => !idsToDelete.includes(record.id));
-                        this.selectedRecords = [];
-                        this.updateSelectedData();
                     } else {
                         const errorText = await response.text();
                         this.showPopup = true;
@@ -75,20 +73,20 @@ const historyApp = Vue.createApp({
             };
         },
         async markAsSettled() {
-            this.updateSelectedData(); // 追加: 選択状態を最新に更新
-            if (this.selectedRecords.length === 0) {
+            const selectedRecords = this.records.filter(record => record.selected);
+            if (selectedRecords.length === 0) {
                 this.showPopup = true;
                 this.popupMessage = 'データが選択されていません';
                 this.showNoButton = false;
                 return;
             }
-            if (this.selectedRecords.some(record => record.isSettled)) {
+            if (selectedRecords.some(record => record.isSettled)) {
                 this.showPopup = true;
                 this.popupMessage = '精算済みのデータが選択されています';
                 this.showNoButton = false;
                 return;
             }
-            this.popupDetails = this.selectedRecords.map(record => ({
+            this.popupDetails = selectedRecords.map(record => ({
                 date: this.formatDate(record.date),
                 totalAmount: this.formatCurrency(record.totalAmount),
                 location: record.location,
@@ -98,7 +96,7 @@ const historyApp = Vue.createApp({
             this.popupMessage = '選択されたデータを精算済みにしてもよろしいですか？';
             this.showNoButton = true;
             this.confirmAction = async () => {
-                const idsToMarkAsSettled = this.selectedRecords.map(record => record.id);
+                const idsToMarkAsSettled = selectedRecords.map(record => record.id);
                 try {
                     const response = await fetch('/api/history/mark-as-settled', {
                         method: 'POST',
@@ -129,24 +127,18 @@ const historyApp = Vue.createApp({
         goToHome() {
             window.location.href = '/';
         },
-        updateSelectedData() {
-            this.selectedRecords = this.records.filter(record => record.selected);
-        },
         toggleSelection(record) {
             record.selected = !record.selected;
-            this.updateSelectedData();
         },
         selectAll() {
             this.filteredRecords.forEach(record => {
                 record.selected = true;
             });
-            this.updateSelectedData();
         },
         deselectAll() {
             this.filteredRecords.forEach(record => {
                 record.selected = false;
             });
-            this.updateSelectedData();
         },
         toggleSelectAll() {
             if (this.isAnySelected) {
@@ -166,26 +158,21 @@ const historyApp = Vue.createApp({
                 this.confirmAction();
             }
             this.closePopup();
-        },
-        resetTotals() {
-            this.selectedRecords = [];
-        }
-    },
-    watch: {
-        filterOption() {
-            this.updateSelectedData(); // フィルターオプション変更時に選択状態を更新
-            this.resetTotals(); // フィルターオプション変更時に合計金額などをリセット
         }
     },
     computed: {
         totalAmount() {
-            return this.selectedRecords.reduce((sum, record) => sum + parseFloat(record.totalAmount), 0);
+            const selectedRecords = this.records.filter(record => record.selected);
+            return selectedRecords.reduce((sum, record) => sum + parseFloat(record.totalAmount), 0);
+        },
+        roundedTotalAmount() {
+            return Math.round(this.totalAmount / 100) * 100;
         },
         myShare() {
-            return (Math.round(this.totalAmount * (this.splitRatio / 100) / 100) * 100).toFixed(2);
+            return Math.ceil(this.roundedTotalAmount * (this.splitRatio / 100));
         },
         theirShare() {
-            return (Math.round(this.totalAmount * ((100 - this.splitRatio) / 100) / 100) * 100).toFixed(2);
+            return Math.floor(this.roundedTotalAmount * ((100 - this.splitRatio) / 100));
         },
         filteredRecords() {
             if (this.filterOption === 'unsettled') {
