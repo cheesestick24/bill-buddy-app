@@ -1,6 +1,5 @@
 body {
     background-color: #f8f9fa;
-    display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
@@ -49,4 +48,14 @@ input[type="checkbox"] {
     display: flex;
     justify-content: space-between; /* ボタンを左右に配置 */
     margin-top: 20px;
+}
+
+.selected-card {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+}
+
+.button-container-center {
+    display: flex;
+    gap: 10px; /* ボタン間のスペース */
 }

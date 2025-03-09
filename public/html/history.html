@@ -12,39 +12,32 @@
 
 <body>
     <div id="history" class="container mt-5">
-        <h1 class="mb-4">履歴一覧</h1>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>選択</th>
-                    <th>日付</th>
-                    <th>合計金額</th>
-                    <th>場所</th>
-                    <th>メモ</th>
-                    <th>割り勘の割合</th>
-                    <th>割合オプション</th>
-                    <th>私の金額</th>
-                    <th>相手の金額</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="record in records" :key="record.id">
-                    <td><input type="checkbox" v-model="record.selected" @change="updateSelectedData"></td>
-                    <td>{{ formatDate(record.date) }}</td>
-                    <td>{{ formatCurrency(record.totalAmount) }}</td>
-                    <td>{{ record.location }}</td>
-                    <td>{{ record.memo }}</td>
-                    <td>{{ record.splitRatio }}%</td>
-                    <td>{{ record.roundingOption }}</td>
-                    <td>{{ formatCurrency(record.myShare) }}</td>
-                    <td>{{ formatCurrency(record.theirShare) }}</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm" @click="deleteRecord(record.id)">削除</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="d-flex justify-content-between mb-4">
+            <h1>履歴一覧</h1>
+            <div>
+                <select v-model="filterOption" class="form-select">
+                    <option value="unsettled">未精算</option>
+                    <option value="settled">精算済み</option>
+                    <option value="all">すべて</option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3" v-for="record in filteredRecords" :key="record.id">
+                <div class="card" :class="{ 'selected-card': record.selected }" @click="toggleSelection(record)">
+                    <div class="card-body">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" v-model="record.selected"
+                                @change.stop="updateSelectedData">
+                        </div>
+                        <h5 class="card-title">{{ formatDate(record.date) }}</h5>
+                        <p class="card-text">合計金額: {{ formatCurrency(record.totalAmount) }}</p>
+                        <p class="card-text">場所: {{ record.location }}</p>
+                        <p class="card-text">精算済み: {{ record.isSettled ? 'はい' : 'いいえ' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div id="selectedData" class="mt-4">
             <p>合計金額: <span id="totalAmount">{{ totalAmount }} 円</span></p>
             <p>わたしの金額: <span id="myShare">{{ myShare }} 円</span></p>
@@ -52,7 +45,10 @@
         </div>
         <div class="button-container">
             <button type="button" class="btn btn-secondary" @click="goToHome">ホーム画面に戻る</button>
-            <button type="button" class="btn btn-primary" @click="copyToClipboard">クリップボードにコピー</button>
+            <div v-if="selectedRecords.length > 0" class="button-container-center">
+                <button type="button" class="btn btn-primary" @click="copyToClipboard">クリップボードにコピー</button>
+                <button type="button" class="btn btn-danger" @click="deleteSelectedRecords">選択されたデータを削除</button>
+            </div>
         </div>
         <div id="message" :class="{ show: message }" class="alert alert-success mt-2" role="alert">{{ message }}</div>
     </div>

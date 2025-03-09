@@ -11,7 +11,8 @@ const app = Vue.createApp({
             roundingOption: 'even',
             saveMessage: '',
             errorMessage: '',
-            username: '' // 追加
+            username: '', // 追加
+            isSettled: false
         };
     },
     computed: {
@@ -58,7 +59,8 @@ const app = Vue.createApp({
                 splitRatio: this.splitRatio,
                 roundingOption: this.getRoundingOptionInJapanese(),
                 myShare: this.calculatedAmounts.myShare,
-                theirShare: this.calculatedAmounts.theirShare
+                theirShare: this.calculatedAmounts.theirShare,
+                isSettled: this.isSettled
             };
             try {
                 const response = await fetch('/save', {

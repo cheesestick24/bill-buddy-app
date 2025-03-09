@@ -17,6 +17,7 @@ CREATE TABLE BillRecords (
     myShare DECIMAL(10, 2) NOT NULL,
     theirShare DECIMAL(10, 2) NOT NULL,
     createdAt DATETIME DEFAULT GETDATE(),
+    isSettled BIT DEFAULT 0 NOT NULL,
     FOREIGN KEY (userId) REFERENCES Users(id)
 );
 

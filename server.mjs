@@ -111,7 +111,7 @@ app.post('/save', async (req, res) => {
     if (!req.session.userId) {
         return res.status(401).send('Unauthorized');
     }
-    const { date, totalAmount, location, memo, splitRatio, roundingOption, myShare, theirShare } = req.body;
+    const { date, totalAmount, location, memo, splitRatio, roundingOption, myShare, theirShare, isSettled } = req.body;
     try {
         const pool = await sql.connect(config);
         await pool.request()
@@ -124,9 +124,10 @@ app.post('/save', async (req, res) => {
             .input('roundingOption', sql.NVarChar, roundingOption)
             .input('myShare', sql.Decimal(10, 2), myShare)
             .input('theirShare', sql.Decimal(10, 2), theirShare)
+            .input('isSettled', sql.Bit, isSettled)
             .query(`
-                INSERT INTO BillRecords (userId, date, totalAmount, location, memo, splitRatio, roundingOption, myShare, theirShare)
-                VALUES (@userId, @date, @totalAmount, @location, @memo, @splitRatio, @roundingOption, @myShare, @theirShare)
+                INSERT INTO BillRecords (userId, date, totalAmount, location, memo, splitRatio, roundingOption, myShare, theirShare, isSettled)
+                VALUES (@userId, @date, @totalAmount, @location, @memo, @splitRatio, @roundingOption, @myShare, @theirShare, @isSettled)
             `);
         res.status(200).send('Data saved successfully');
     } catch (err) {
@@ -150,6 +151,23 @@ app.delete('/api/history/:id', async (req, res) => {
     } catch (err) {
         console.error('Error deleting record:', err);
         res.status(500).send(`Error deleting record: ${err.message}`);
+    }
+});
+
+app.post('/api/history/bulk-delete', async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).send('Unauthorized');
+    }
+    const { ids } = req.body;
+    try {
+        const pool = await sql.connect(config);
+        await pool.request()
+            .input('userId', sql.Int, req.session.userId)
+            .query(`DELETE FROM BillRecords WHERE id IN (${ids.join(',')}) AND userId = @userId`);
+        res.status(200).send('Records deleted successfully');
+    } catch (err) {
+        console.error('Error deleting records:', err);
+        res.status(500).send(`Error deleting records: ${err.message}`);
     }
 });
 
