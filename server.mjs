@@ -49,7 +49,7 @@ app.use(session({
     resave: false,
     saveUninitialized: true,
     cookie: {
-        secure: false, // secure: true for HTTPS
+        secure: process.env.NODE_ENV === 'production', // HTTPSの場合はtrueに設定
         maxAge: 30 * 24 * 60 * 60 * 1000 // 1ヶ月 (30日) の持続時間
     }
 }));
