@@ -1,9 +1,7 @@
 body {
     background-color: #f8f9fa;
-    display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
 }
 
 .register-container {
@@ -49,4 +47,55 @@ input[type="checkbox"] {
     display: flex;
     justify-content: space-between; /* ボタンを左右に配置 */
     margin-top: 20px;
+    margin-bottom: 100px; /* ボタンの下に余白を追加 */
+}
+
+.selected-card {
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+}
+
+.button-container-center {
+    display: flex;
+    gap: 10px; /* ボタン間のスペース */
+}
+
+.sticky-menu {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background-color: #e9ecef; /* ヘッダーの背景色を変更 */
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6; /* ヘッダーの下に境界線を追加 */
+}
+
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.popup {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.popup button {
+    margin: 0 10px; /* ボタンの隙間を追加 */
+}
+
+.card-text.w-50 {
+    width: 50%;
+    display: inline-block;
+    vertical-align: top;
 }

@@ -12,11 +12,13 @@ CREATE TABLE BillRecords (
     totalAmount DECIMAL(10, 2) NOT NULL,
     location NVARCHAR(255),
     memo NVARCHAR(255),
-    splitRatio INT NOT NULL,
-    roundingOption NVARCHAR(50) NOT NULL,
-    myShare DECIMAL(10, 2) NOT NULL,
-    theirShare DECIMAL(10, 2) NOT NULL,
+    splitRatio INT NULL,
+    roundingOption NVARCHAR(50) NULL,
+    myShare DECIMAL(10, 2) NULL,
+    theirShare DECIMAL(10, 2) NULL,
     createdAt DATETIME DEFAULT GETDATE(),
+    isSettled BIT DEFAULT 0 NOT NULL,
+    category NVARCHAR(255),
     FOREIGN KEY (userId) REFERENCES Users(id)
 );
 
@@ -26,5 +28,6 @@ CREATE TABLE OTP (
     otp NVARCHAR(6) NOT NULL,
     createdAt DATETIME DEFAULT GETDATE(),
     expiresAt DATETIME NOT NULL,
+    userAgent NVARCHAR(MAX),
     FOREIGN KEY (userId) REFERENCES Users(id)
 );

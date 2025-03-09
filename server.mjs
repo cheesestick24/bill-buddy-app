@@ -111,7 +111,7 @@ app.post('/save', async (req, res) => {
     if (!req.session.userId) {
         return res.status(401).send('Unauthorized');
     }
-    const { date, totalAmount, location, memo, splitRatio, roundingOption, myShare, theirShare } = req.body;
+    const { date, totalAmount, location, memo, splitRatio, roundingOption, myShare, theirShare, isSettled, category } = req.body; // 追加
     try {
         const pool = await sql.connect(config);
         await pool.request()
@@ -120,13 +120,15 @@ app.post('/save', async (req, res) => {
             .input('totalAmount', sql.Decimal(10, 2), totalAmount)
             .input('location', sql.NVarChar, location)
             .input('memo', sql.NVarChar, memo)
-            .input('splitRatio', sql.Int, splitRatio)
-            .input('roundingOption', sql.NVarChar, roundingOption)
-            .input('myShare', sql.Decimal(10, 2), myShare)
-            .input('theirShare', sql.Decimal(10, 2), theirShare)
+            .input('splitRatio', sql.Int, splitRatio || null)
+            .input('roundingOption', sql.NVarChar, roundingOption || null)
+            .input('myShare', sql.Decimal(10, 2), myShare || null)
+            .input('theirShare', sql.Decimal(10, 2), theirShare || null)
+            .input('isSettled', sql.Bit, isSettled)
+            .input('category', sql.NVarChar, category) // 追加
             .query(`
-                INSERT INTO BillRecords (userId, date, totalAmount, location, memo, splitRatio, roundingOption, myShare, theirShare)
-                VALUES (@userId, @date, @totalAmount, @location, @memo, @splitRatio, @roundingOption, @myShare, @theirShare)
+                INSERT INTO BillRecords (userId, date, totalAmount, location, memo, splitRatio, roundingOption, myShare, theirShare, isSettled, category)
+                VALUES (@userId, @date, @totalAmount, @location, @memo, @splitRatio, @roundingOption, @myShare, @theirShare, @isSettled, @category)
             `);
         res.status(200).send('Data saved successfully');
     } catch (err) {
@@ -150,6 +152,40 @@ app.delete('/api/history/:id', async (req, res) => {
     } catch (err) {
         console.error('Error deleting record:', err);
         res.status(500).send(`Error deleting record: ${err.message}`);
+    }
+});
+
+app.post('/api/history/bulk-delete', async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).send('Unauthorized');
+    }
+    const { ids } = req.body;
+    try {
+        const pool = await sql.connect(config);
+        await pool.request()
+            .input('userId', sql.Int, req.session.userId)
+            .query(`DELETE FROM BillRecords WHERE id IN (${ids.join(',')}) AND userId = @userId`);
+        res.status(200).send('Records deleted successfully');
+    } catch (err) {
+        console.error('Error deleting records:', err);
+        res.status(500).send(`Error deleting records: ${err.message}`);
+    }
+});
+
+app.post('/api/history/mark-as-settled', async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).send('Unauthorized');
+    }
+    const { ids } = req.body;
+    try {
+        const pool = await sql.connect(config);
+        await pool.request()
+            .input('userId', sql.Int, req.session.userId)
+            .query(`UPDATE BillRecords SET isSettled = 1 WHERE id IN (${ids.join(',')}) AND userId = @userId`);
+        res.status(200).send('Records marked as settled successfully');
+    } catch (err) {
+        console.error('Error marking records as settled:', err);
+        res.status(500).send(`Error marking records as settled: ${err.message}`);
     }
 });
 
