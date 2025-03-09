@@ -41,10 +41,9 @@
                     <div class="card" :class="{ 'selected-card': record.selected }" @click="toggleSelection(record)">
                         <div class="card-body">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" v-model="record.selected"
-                                    @change="updateSelectedData" @change.stop="updateSelectedData">
+                                <input class="form-check-input" type="checkbox" v-model="record.selected">
                             </div>
-                            <h5 class="card-title">{{ formatDate(record.date) }}</h5>
+                            <h5 class=" card-title">{{ formatDate(record.date) }}</h5>
                             <div class="d-flex justify-content-between">
                                 <p class="card-text w-50">合計金額: {{ formatCurrency(record.totalAmount) }}</p>
                                 <p class="card-text w-50">分類: {{ record.category }}</p> <!-- 分類を追加 -->
@@ -78,10 +77,12 @@
             <div class="popup">
                 <p>{{ popupMessage }}</p>
                 <ul class="text-start" v-if="popupDetails.length > 0">
-                    <li v-for="detail in popupDetails" :key="detail.date">{{ detail.date }} - {{ detail.totalAmount }} -
+                    <li v-for="detail in popupDetails" :key="detail.date">{{ detail.date }} - {{ detail.totalAmount
+                        }} -
                         {{ detail.location }}</li>
                 </ul>
-                <p v-if="popupDetails.length > 0">金額: {{ formatCurrency(myShare) }} / {{ formatCurrency(theirShare) }}
+                <p v-if="popupDetails.length > 0">金額: {{ formatCurrency(myShare) }} / {{ formatCurrency(theirShare)
+                    }}
                 </p>
                 <button class="btn btn-primary" @click="confirmPopup">はい</button>
                 <button v-if="showNoButton" class="btn btn-secondary" @click="closePopup">いいえ</button>
