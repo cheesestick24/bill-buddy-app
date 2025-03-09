@@ -64,28 +64,21 @@
                     </div>
                 </div>
             </div>
-            <div id="message" :class="{ show: message }" class="alert alert-success mt-2" role="alert" v-if="message">{{
-                message }}</div>
             <div class="button-container">
                 <button type="button" class="btn btn-secondary" @click="goToHome">ホーム画面に戻る</button>
-                <div v-if="selectedRecords.length > 0" class="button-container-center">
-                    <button type="button" class="btn btn-success" @click="markAsSettled"
-                        :disabled="!canMarkAsSettled">精算する</button>
-                    <!-- <button type="button" class="btn btn-primary" @click="copyToClipboard"
-                        :disabled="!canMarkAsSettled">クリップボードにコピー</button> -->
+                <div class="button-container-center">
+                    <button type="button" class="btn btn-success" @click="markAsSettled">精算する</button>
                 </div>
             </div>
         </div>
         <div v-if="showPopup" class="popup-overlay">
             <div class="popup">
                 <p>{{ popupMessage }}</p>
-                <ul class="text-start">
+                <ul class="text-start" v-if="popupDetails.length > 0">
                     <li v-for="detail in popupDetails" :key="detail.date">{{ detail.date }} - {{ detail.totalAmount }} -
                         {{ detail.location }}</li>
                 </ul>
-                <p>合計金額: {{ formatCurrency(totalAmount) }}</p>
-                <p>私　: {{ myShare }} 円 / {{ splitRatio }} %</p>
-                <p>相手: {{ theirShare }}円 / {{ (100 - splitRatio) }} %</p>
+                <p v-if="popupDetails.length > 0">合計金額: {{ formatCurrency(totalAmount) }}</p>
                 <button class="btn btn-primary" @click="confirmPopup">はい</button>
                 <button v-if="showNoButton" class="btn btn-secondary" @click="closePopup">いいえ</button>
             </div>

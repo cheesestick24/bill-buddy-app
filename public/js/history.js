@@ -3,7 +3,6 @@ const historyApp = Vue.createApp({
         return {
             records: [],
             selectedRecords: [],
-            message: '',
             isSettled: false,
             filterOption: 'unsettled', // 追加
             showPopup: false, // ポップアップ表示用
@@ -30,29 +29,6 @@ const historyApp = Vue.createApp({
         },
         formatCurrency(amount) {
             return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(amount);
-        },
-        async deleteRecord(id) {
-            this.showPopup = true;
-            this.popupMessage = 'このレコードを削除してもよろしいですか？';
-            this.showNoButton = true;
-            this.confirmAction = async () => {
-                try {
-                    const response = await fetch(`/api/history/${id}`, {
-                        method: 'DELETE'
-                    });
-                    if (response.ok) {
-                        this.records = this.records.filter(record => record.id !== id);
-                    } else {
-                        const errorText = await response.text();
-                        this.showPopup = true;
-                        this.popupMessage = `レコードの削除中にエラーが発生しました: ${errorText}`;
-                    }
-                } catch (error) {
-                    console.error('Error deleting record:', error);
-                    this.showPopup = true;
-                    this.popupMessage = `レコードの削除中にエラーが発生しました: ${error.message}`;
-                }
-            };
         },
         async deleteSelectedRecords() {
             if (this.selectedRecords.length === 0) {
@@ -99,6 +75,19 @@ const historyApp = Vue.createApp({
             };
         },
         async markAsSettled() {
+            this.updateSelectedData(); // 追加: 選択状態を最新に更新
+            if (this.selectedRecords.length === 0) {
+                this.showPopup = true;
+                this.popupMessage = 'データが選択されていません';
+                this.showNoButton = false;
+                return;
+            }
+            if (this.selectedRecords.some(record => record.isSettled)) {
+                this.showPopup = true;
+                this.popupMessage = '精算済みのデータが選択されています';
+                this.showNoButton = false;
+                return;
+            }
             this.popupDetails = this.selectedRecords.map(record => ({
                 date: this.formatDate(record.date),
                 totalAmount: this.formatCurrency(record.totalAmount),
@@ -124,8 +113,7 @@ const historyApp = Vue.createApp({
                                 record.isSettled = true;
                             }
                         });
-                        this.selectedRecords = [];
-                        this.updateSelectedData();
+                        this.deselectAll(); // 追加: すべての選択状態をリセット
                     } else {
                         const errorText = await response.text();
                         this.showPopup = true;
@@ -143,28 +131,6 @@ const historyApp = Vue.createApp({
         },
         updateSelectedData() {
             this.selectedRecords = this.records.filter(record => record.selected);
-            this.message = '';
-        },
-        copyToClipboard() {
-            if (this.selectedRecords.length === 0) {
-                this.message = '選択されたデータがありません';
-                return;
-            }
-            const totalAmount = this.formatCurrency(this.totalAmount);
-            const myShare = this.formatCurrency(this.myShare);
-            const theirShare = this.formatCurrency(this.theirShare);
-            const textToCopy = `
-                合計金額: ${totalAmount}
-                私の金額: ${myShare}
-                相手の金額: ${theirShare}
-            `;
-
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                this.message = 'クリップボードにコピーしました';
-            }).catch(err => {
-                console.error('Error copying to clipboard:', err);
-                this.message = 'クリップボードへのコピーに失敗しました';
-            });
         },
         toggleSelection(record) {
             record.selected = !record.selected;
@@ -200,11 +166,15 @@ const historyApp = Vue.createApp({
                 this.confirmAction();
             }
             this.closePopup();
+        },
+        resetTotals() {
+            this.selectedRecords = [];
         }
     },
     watch: {
         filterOption() {
-            this.deselectAll();
+            this.updateSelectedData(); // フィルターオプション変更時に選択状態を更新
+            this.resetTotals(); // フィルターオプション変更時に合計金額などをリセット
         }
     },
     computed: {
@@ -225,9 +195,6 @@ const historyApp = Vue.createApp({
             } else {
                 return this.records;
             }
-        },
-        canMarkAsSettled() {
-            return this.selectedRecords.every(record => !record.isSettled);
         },
         isAnySelected() {
             return this.filteredRecords.some(record => record.selected);
