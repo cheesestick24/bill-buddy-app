@@ -70,6 +70,36 @@ const historyApp = Vue.createApp({
                 alert(`データの削除中にエラーが発生しました: ${error.message}`);
             }
         },
+        async markAsSettled() {
+            if (!confirm('選択されたデータを精算済みにしてもよろしいですか？')) {
+                return;
+            }
+            const idsToMarkAsSettled = this.selectedRecords.map(record => record.id);
+            try {
+                const response = await fetch('/api/history/mark-as-settled', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ids: idsToMarkAsSettled })
+                });
+                if (response.ok) {
+                    this.records.forEach(record => {
+                        if (idsToMarkAsSettled.includes(record.id)) {
+                            record.isSettled = true;
+                        }
+                    });
+                    this.selectedRecords = [];
+                    this.updateSelectedData();
+                } else {
+                    const errorText = await response.text();
+                    alert(`データの更新中にエラーが発生しました: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error marking records as settled:', error);
+                alert(`データの更新中にエラーが発生しました: ${error.message}`);
+            }
+        },
         goToHome() {
             window.location.href = '/';
         },
@@ -101,6 +131,25 @@ const historyApp = Vue.createApp({
         toggleSelection(record) {
             record.selected = !record.selected;
             this.updateSelectedData();
+        },
+        selectAll() {
+            this.filteredRecords.forEach(record => {
+                record.selected = true;
+            });
+            this.updateSelectedData();
+        },
+        deselectAll() {
+            this.filteredRecords.forEach(record => {
+                record.selected = false;
+            });
+            this.updateSelectedData();
+        },
+        toggleSelectAll() {
+            if (this.isAllSelected) {
+                this.deselectAll();
+            } else {
+                this.selectAll();
+            }
         }
     },
     computed: {
@@ -121,6 +170,12 @@ const historyApp = Vue.createApp({
             } else {
                 return this.records;
             }
+        },
+        canMarkAsSettled() {
+            return this.selectedRecords.every(record => !record.isSettled);
+        },
+        isAllSelected() {
+            return this.filteredRecords.length > 0 && this.filteredRecords.every(record => record.selected);
         }
     }
 });

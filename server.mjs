@@ -171,6 +171,23 @@ app.post('/api/history/bulk-delete', async (req, res) => {
     }
 });
 
+app.post('/api/history/mark-as-settled', async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).send('Unauthorized');
+    }
+    const { ids } = req.body;
+    try {
+        const pool = await sql.connect(config);
+        await pool.request()
+            .input('userId', sql.Int, req.session.userId)
+            .query(`UPDATE BillRecords SET isSettled = 1 WHERE id IN (${ids.join(',')}) AND userId = @userId`);
+        res.status(200).send('Records marked as settled successfully');
+    } catch (err) {
+        console.error('Error marking records as settled:', err);
+        res.status(500).send(`Error marking records as settled: ${err.message}`);
+    }
+});
+
 app.post('/login', async (req, res) => {
     const { usernameOrEmail } = req.body;
     try {
