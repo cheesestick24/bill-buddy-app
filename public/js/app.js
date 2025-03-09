@@ -13,7 +13,8 @@ const app = Vue.createApp({
             errorMessage: '',
             username: '', // 追加
             isSettled: false,
-            showOptionalFields: false // 追加
+            showOptionalFields: false, // 追加
+            category: '' // デフォルト値を空白に変更
         };
     },
     computed: {
@@ -61,7 +62,8 @@ const app = Vue.createApp({
                 roundingOption: this.getRoundingOptionInJapanese(),
                 myShare: this.calculatedAmounts.myShare,
                 theirShare: this.calculatedAmounts.theirShare,
-                isSettled: this.isSettled
+                isSettled: this.isSettled,
+                category: this.category // 追加
             };
             try {
                 const response = await fetch('/save', {
@@ -150,6 +152,7 @@ const app = Vue.createApp({
             this.roundingOption = 'even';
             this.saveMessage = '';
             this.errorMessage = '';
+            this.category = ''; // デフォルト値を空白に変更
         },
         toggleOptionalFields() {
             this.showOptionalFields = !this.showOptionalFields;

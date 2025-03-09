@@ -45,7 +45,10 @@
                                     @change.stop="updateSelectedData">
                             </div>
                             <h5 class="card-title">{{ formatDate(record.date) }}</h5>
-                            <p class="card-text">合計金額: {{ formatCurrency(record.totalAmount) }}</p>
+                            <div class="d-flex justify-content-between">
+                                <p class="card-text w-50">合計金額: {{ formatCurrency(record.totalAmount) }}</p>
+                                <p class="card-text w-50">分類: {{ record.category }}</p> <!-- 分類を追加 -->
+                            </div>
                             <p class="card-text">場所: {{ record.location }}</p>
                             <p class="card-text">精算済み: {{ record.isSettled ? 'はい' : 'いいえ' }}</p>
                         </div>

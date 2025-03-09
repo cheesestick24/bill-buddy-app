@@ -18,6 +18,7 @@ CREATE TABLE BillRecords (
     theirShare DECIMAL(10, 2) NOT NULL,
     createdAt DATETIME DEFAULT GETDATE(),
     isSettled BIT DEFAULT 0 NOT NULL,
+    category NVARCHAR(255),
     FOREIGN KEY (userId) REFERENCES Users(id)
 );
 

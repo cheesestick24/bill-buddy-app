@@ -93,3 +93,9 @@ input[type="checkbox"] {
 .popup button {
     margin: 0 10px; /* ボタンの隙間を追加 */
 }
+
+.card-text.w-50 {
+    width: 50%;
+    display: inline-block;
+    vertical-align: top;
+}

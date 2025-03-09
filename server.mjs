@@ -111,7 +111,7 @@ app.post('/save', async (req, res) => {
     if (!req.session.userId) {
         return res.status(401).send('Unauthorized');
     }
-    const { date, totalAmount, location, memo, splitRatio, roundingOption, myShare, theirShare, isSettled } = req.body;
+    const { date, totalAmount, location, memo, splitRatio, roundingOption, myShare, theirShare, isSettled, category } = req.body; // 追加
     try {
         const pool = await sql.connect(config);
         await pool.request()
@@ -125,9 +125,10 @@ app.post('/save', async (req, res) => {
             .input('myShare', sql.Decimal(10, 2), myShare)
             .input('theirShare', sql.Decimal(10, 2), theirShare)
             .input('isSettled', sql.Bit, isSettled)
+            .input('category', sql.NVarChar, category) // 追加
             .query(`
-                INSERT INTO BillRecords (userId, date, totalAmount, location, memo, splitRatio, roundingOption, myShare, theirShare, isSettled)
-                VALUES (@userId, @date, @totalAmount, @location, @memo, @splitRatio, @roundingOption, @myShare, @theirShare, @isSettled)
+                INSERT INTO BillRecords (userId, date, totalAmount, location, memo, splitRatio, roundingOption, myShare, theirShare, isSettled, category)
+                VALUES (@userId, @date, @totalAmount, @location, @memo, @splitRatio, @roundingOption, @myShare, @theirShare, @isSettled, @category)
             `);
         res.status(200).send('Data saved successfully');
     } catch (err) {
