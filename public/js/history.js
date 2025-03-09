@@ -5,7 +5,13 @@ const historyApp = Vue.createApp({
             selectedRecords: [],
             message: '',
             isSettled: false,
-            filterOption: 'unsettled' // 追加
+            filterOption: 'unsettled', // 追加
+            showPopup: false, // ポップアップ表示用
+            popupMessage: '', // ポップアップメッセージ
+            confirmAction: null, // 確認アクション
+            showNoButton: true, // いいえボタン表示用
+            popupDetails: [], // ポップアップに表示する選択データの詳細
+            splitRatio: 50 // 割り勘の割合
         };
     },
     async created() {
@@ -26,79 +32,111 @@ const historyApp = Vue.createApp({
             return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(amount);
         },
         async deleteRecord(id) {
-            if (!confirm('このレコードを削除してもよろしいですか？')) {
-                return;
-            }
-            try {
-                const response = await fetch(`/api/history/${id}`, {
-                    method: 'DELETE'
-                });
-                if (response.ok) {
-                    this.records = this.records.filter(record => record.id !== id);
-                } else {
-                    const errorText = await response.text();
-                    alert(`レコードの削除中にエラーが発生しました: ${errorText}`);
+            this.showPopup = true;
+            this.popupMessage = 'このレコードを削除してもよろしいですか？';
+            this.showNoButton = true;
+            this.confirmAction = async () => {
+                try {
+                    const response = await fetch(`/api/history/${id}`, {
+                        method: 'DELETE'
+                    });
+                    if (response.ok) {
+                        this.records = this.records.filter(record => record.id !== id);
+                    } else {
+                        const errorText = await response.text();
+                        this.showPopup = true;
+                        this.popupMessage = `レコードの削除中にエラーが発生しました: ${errorText}`;
+                    }
+                } catch (error) {
+                    console.error('Error deleting record:', error);
+                    this.showPopup = true;
+                    this.popupMessage = `レコードの削除中にエラーが発生しました: ${error.message}`;
                 }
-            } catch (error) {
-                console.error('Error deleting record:', error);
-                alert(`レコードの削除中にエラーが発生しました: ${error.message}`);
-            }
+            };
         },
         async deleteSelectedRecords() {
-            if (!confirm('選択されたデータを削除してもよろしいですか？')) {
+            if (this.selectedRecords.length === 0) {
+                this.showPopup = true;
+                this.popupMessage = '削除するデータが選択されていません';
+                this.showNoButton = false;
                 return;
             }
-            const idsToDelete = this.selectedRecords.map(record => record.id);
-            try {
-                const response = await fetch('/api/history/bulk-delete', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ ids: idsToDelete })
-                });
-                if (response.ok) {
-                    this.records = this.records.filter(record => !idsToDelete.includes(record.id));
-                    this.selectedRecords = [];
-                    this.updateSelectedData();
-                } else {
-                    const errorText = await response.text();
-                    alert(`データの削除中にエラーが発生しました: ${errorText}`);
-                }
-            } catch (error) {
-                console.error('Error deleting records:', error);
-                alert(`データの削除中にエラーが発生しました: ${error.message}`);
+            const idsToDelete = this.selectedRecords
+                .filter(record => !record.isSettled) // 精算済みのレコードを除外
+                .map(record => record.id);
+            if (idsToDelete.length === 0) {
+                this.showPopup = true;
+                this.popupMessage = '精算済みのレコードは削除できません';
+                this.showNoButton = false;
+                return;
             }
+            this.showPopup = true;
+            this.popupMessage = '選択されたデータを削除してもよろしいですか？';
+            this.showNoButton = true;
+            this.confirmAction = async () => {
+                try {
+                    const response = await fetch('/api/history/bulk-delete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ ids: idsToDelete })
+                    });
+                    if (response.ok) {
+                        this.records = this.records.filter(record => !idsToDelete.includes(record.id));
+                        this.selectedRecords = [];
+                        this.updateSelectedData();
+                    } else {
+                        const errorText = await response.text();
+                        this.showPopup = true;
+                        this.popupMessage = `データの削除中にエラーが発生しました: ${errorText}`;
+                    }
+                } catch (error) {
+                    console.error('Error deleting records:', error);
+                    this.showPopup = true;
+                    this.popupMessage = `データの削除中にエラーが発生しました: ${error.message}`;
+                }
+            };
         },
         async markAsSettled() {
-            if (!confirm('選択されたデータを精算済みにしてもよろしいですか？')) {
-                return;
-            }
-            const idsToMarkAsSettled = this.selectedRecords.map(record => record.id);
-            try {
-                const response = await fetch('/api/history/mark-as-settled', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ ids: idsToMarkAsSettled })
-                });
-                if (response.ok) {
-                    this.records.forEach(record => {
-                        if (idsToMarkAsSettled.includes(record.id)) {
-                            record.isSettled = true;
-                        }
+            this.popupDetails = this.selectedRecords.map(record => ({
+                date: this.formatDate(record.date),
+                totalAmount: this.formatCurrency(record.totalAmount),
+                location: record.location,
+                splitRatio: record.splitRatio
+            }));
+            this.showPopup = true;
+            this.popupMessage = '選択されたデータを精算済みにしてもよろしいですか？';
+            this.showNoButton = true;
+            this.confirmAction = async () => {
+                const idsToMarkAsSettled = this.selectedRecords.map(record => record.id);
+                try {
+                    const response = await fetch('/api/history/mark-as-settled', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ ids: idsToMarkAsSettled })
                     });
-                    this.selectedRecords = [];
-                    this.updateSelectedData();
-                } else {
-                    const errorText = await response.text();
-                    alert(`データの更新中にエラーが発生しました: ${errorText}`);
+                    if (response.ok) {
+                        this.records.forEach(record => {
+                            if (idsToMarkAsSettled.includes(record.id)) {
+                                record.isSettled = true;
+                            }
+                        });
+                        this.selectedRecords = [];
+                        this.updateSelectedData();
+                    } else {
+                        const errorText = await response.text();
+                        this.showPopup = true;
+                        this.popupMessage = `データの更新中にエラーが発生しました: ${errorText}`;
+                    }
+                } catch (error) {
+                    console.error('Error marking records as settled:', error);
+                    this.showPopup = true;
+                    this.popupMessage = `データの更新中にエラーが発生しました: ${error.message}`;
                 }
-            } catch (error) {
-                console.error('Error marking records as settled:', error);
-                alert(`データの更新中にエラーが発生しました: ${error.message}`);
-            }
+            };
         },
         goToHome() {
             window.location.href = '/';
@@ -145,11 +183,28 @@ const historyApp = Vue.createApp({
             this.updateSelectedData();
         },
         toggleSelectAll() {
-            if (this.isAllSelected) {
+            if (this.isAnySelected) {
                 this.deselectAll();
             } else {
                 this.selectAll();
             }
+        },
+        closePopup() {
+            this.showPopup = false;
+            this.popupMessage = '';
+            this.confirmAction = null;
+            this.popupDetails = [];
+        },
+        confirmPopup() {
+            if (this.confirmAction) {
+                this.confirmAction();
+            }
+            this.closePopup();
+        }
+    },
+    watch: {
+        filterOption() {
+            this.deselectAll();
         }
     },
     computed: {
@@ -157,10 +212,10 @@ const historyApp = Vue.createApp({
             return this.selectedRecords.reduce((sum, record) => sum + parseFloat(record.totalAmount), 0);
         },
         myShare() {
-            return this.selectedRecords.reduce((sum, record) => sum + parseFloat(record.myShare), 0);
+            return (Math.round(this.totalAmount * (this.splitRatio / 100) / 100) * 100).toFixed(2);
         },
         theirShare() {
-            return this.selectedRecords.reduce((sum, record) => sum + parseFloat(record.theirShare), 0);
+            return (Math.round(this.totalAmount * ((100 - this.splitRatio) / 100) / 100) * 100).toFixed(2);
         },
         filteredRecords() {
             if (this.filterOption === 'unsettled') {
@@ -174,8 +229,8 @@ const historyApp = Vue.createApp({
         canMarkAsSettled() {
             return this.selectedRecords.every(record => !record.isSettled);
         },
-        isAllSelected() {
-            return this.filteredRecords.length > 0 && this.filteredRecords.every(record => record.selected);
+        isAnySelected() {
+            return this.filteredRecords.some(record => record.selected);
         }
     }
 });

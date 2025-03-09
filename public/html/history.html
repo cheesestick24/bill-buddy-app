@@ -21,9 +21,9 @@
                         メニュー
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <li><button class="dropdown-item" @click="toggleSelectAll">{{ isAllSelected ? '全解除' : '全選択'
+                        <li><button class="dropdown-item" @click="toggleSelectAll">{{ isAnySelected ? '全解除' : '全選択'
                                 }}</button></li>
-                        <li><button class="dropdown-item" @click="deleteSelectedRecords">選択されたデータを削除</button></li>
+                        <li><button class="dropdown-item" @click="deleteSelectedRecords">削除</button></li>
                     </ul>
                 </div>
             </div>
@@ -56,6 +56,13 @@
                 <p>合計金額: <span id="totalAmount">{{ totalAmount }} 円</span></p>
                 <p>わたしの金額: <span id="myShare">{{ myShare }} 円</span></p>
                 <p>相手の金額: <span id="theirShare">{{ theirShare }} 円</span></p>
+                <div class="mb-3">
+                    <label for="splitRatio" class="form-label">割り勘の割合</label>
+                    <input type="range" v-model="splitRatio" class="form-range" id="splitRatio" min="0" max="100"
+                        step="5">
+                    <div>私: {{ splitRatio }}% 相手: {{ (100 - splitRatio) }}%
+                    </div>
+                </div>
             </div>
             <div id="message" :class="{ show: message }" class="alert alert-success mt-2" role="alert" v-if="message">{{
                 message }}</div>
@@ -63,10 +70,24 @@
                 <button type="button" class="btn btn-secondary" @click="goToHome">ホーム画面に戻る</button>
                 <div v-if="selectedRecords.length > 0" class="button-container-center">
                     <button type="button" class="btn btn-success" @click="markAsSettled"
-                        :disabled="!canMarkAsSettled">選択されたデータを精算済みにする</button>
-                    <button type="button" class="btn btn-primary" @click="copyToClipboard"
-                        :disabled="!canMarkAsSettled">クリップボードにコピー</button>
+                        :disabled="!canMarkAsSettled">精算する</button>
+                    <!-- <button type="button" class="btn btn-primary" @click="copyToClipboard"
+                        :disabled="!canMarkAsSettled">クリップボードにコピー</button> -->
                 </div>
+            </div>
+        </div>
+        <div v-if="showPopup" class="popup-overlay">
+            <div class="popup">
+                <p>{{ popupMessage }}</p>
+                <ul class="text-start">
+                    <li v-for="detail in popupDetails" :key="detail.date">{{ detail.date }} - {{ detail.totalAmount }} -
+                        {{ detail.location }}</li>
+                </ul>
+                <p>合計金額: {{ formatCurrency(totalAmount) }}</p>
+                <p>私　: {{ myShare }} 円 / {{ splitRatio }} %</p>
+                <p>相手: {{ theirShare }}円 / {{ (100 - splitRatio) }} %</p>
+                <button class="btn btn-primary" @click="confirmPopup">はい</button>
+                <button v-if="showNoButton" class="btn btn-secondary" @click="closePopup">いいえ</button>
             </div>
         </div>
     </div>
