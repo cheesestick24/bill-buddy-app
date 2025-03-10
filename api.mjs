@@ -112,7 +112,7 @@ router.post('/login', async (req, res) => {
             .query('SELECT * FROM Users WHERE username = @usernameOrEmail OR email = @usernameOrEmail');
         const user = result.recordset[0];
         if (user) {
-            const otp = crypto.randomBytes(3).toString('hex');
+            const otp = (Math.floor(100000 + Math.random() * 900000)).toString(); // 6桁の数字
             const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
             await pool.request()
                 .input('userId', sql.Int, user.id)
