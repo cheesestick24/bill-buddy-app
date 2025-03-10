@@ -29,6 +29,20 @@ input[type="checkbox"] {
     width: 20px;
     height: 20px;
     vertical-align: middle;
+<<<<<<< HEAD
+=======
+}
+
+#message {
+    color: green;
+    font-weight: bold;
+    margin-top: 10px;
+    display: none;
+}
+
+#message.show {
+    display: block;
+>>>>>>> 1299c0a20bd6939250df2ca394e84c6e0c438552
 }
 
 .button-container {
