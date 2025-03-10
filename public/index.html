@@ -6,16 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>割り勘アプリ</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" href="/img/money_warikan_business.ico" type="image/x-icon"> <!-- アイコンのパスを設定 -->
+    <link rel="stylesheet" href="../css/style.css">
 </head>
 
 <body>
-    <div id="app" class="container mt-5">
-        <div class="d-flex justify-content-between">
-            <h1 class="mb-4">割り勘アプリ</h1>
-            <div v-if="username" class="align-self-center">ようこそ、{{ username }}さん</div>
+    <div id="app">
+        <div class="sticky-menu d-flex justify-content-between align-items-center">
+            <div class="container d-flex justify-content-between align-items-center">
+                <h1>割り勘アプリ</h1>
+                <div v-if="username" class="align-self-center">ようこそ、{{ username }}さん</div>
+            </div>
         </div>
-        <form>
+        <form class="container mt-4">
             <div class="mb-3">
                 <label for="date" class="form-label">日付</label>
                 <input type="date" v-model="date" class="form-control" id="date">
@@ -35,7 +37,7 @@
             <div class="mb-3">
                 <label for="category" class="form-label">分類</label>
                 <select v-model="category" class="form-select" id="category">
-                    <option value="">選択してください</option> <!-- 空白のオプションを追加 -->
+                    <option value="">選択してください</option>
                     <option value="食費">食費</option>
                     <option value="外食費">外食費</option>
                     <option value="日用品">日用品</option>
@@ -45,24 +47,22 @@
                 </select>
             </div>
             <div class="mb-3">
+                <label for="payer" class="form-label">支払者</label>
+                <select v-model="payer" class="form-select" id="payer">
+                    <option value="self">自分払い</option>
+                    <option value="other">相手払い</option>
+                </select>
+            </div>
+            <div class="mb-3">
                 <button type="button" class="btn btn-link" @click="toggleOptionalFields">
                     オプション項目を{{ showOptionalFields ? '非表示' : '表示' }}にする
                 </button>
             </div>
             <div v-if="showOptionalFields">
                 <div class="mb-3">
-                    <label class="form-label">割合オプション</label>
-                    <select v-model="roundingOption" class="form-select">
-                        <option value="">選択してください</option> <!-- 空白のオプションを追加 -->
-                        <option value="even">四捨五入</option>
-                        <option value="more">相手が多め</option>
-                        <option value="less">自分が多め</option>
-                    </select>
-                </div>
-                <div class="mb-3">
                     <label for="splitRatio" class="form-label">割り勘の割合</label>
                     <input type="range" v-model="splitRatio" class="form-range" id="splitRatio" min="0" max="100"
-                        step="5" :disabled="roundingOption === ''">
+                        step="5">
                     <div>私: {{ splitRatio }}% 相手: {{ 100 - splitRatio }}%</div>
                 </div>
                 <div class="mb-3">
@@ -78,8 +78,19 @@
                 <button type="button" class="btn btn-secondary" @click="logout">ログアウト</button>
             </div>
         </form>
-        <div v-if="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
-        <div v-if="saveMessage" class="alert alert-info mt-3">{{ saveMessage }}</div>
+
+        <div v-if="showSavePopup" class="popup-overlay d-flex align-items-center justify-content-center">
+            <div class="popup">
+                <p>{{ savePopupMessage }}</p>
+                <button class="btn btn-primary" @click="closeSavePopup">閉じる</button>
+            </div>
+        </div>
+        <div v-if="showErrorPopup" class="popup-overlay d-flex align-items-center justify-content-center">
+            <div class="popup">
+                <p>{{ errorPopupMessage }}</p>
+                <button class="btn btn-danger" @click="closeErrorPopup">閉じる</button>
+            </div>
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/vue@3.2.26/dist/vue.global.js"></script>
     <script src="/js/app.js"></script>

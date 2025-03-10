@@ -8,25 +8,21 @@ const app = Vue.createApp({
             memo: '',
             date: new Date().toISOString().split('T')[0],
             splitRatio: 50,
-            roundingOption: '',
-            saveMessage: '',
-            errorMessage: '',
-            username: '', // 追加
+            username: '',
             isSettled: false,
-            showOptionalFields: false, // 追加
-            category: '' // デフォルト値を空白に変更
+            showOptionalFields: false,
+            category: '',
+            payer: 'self',
+            showSavePopup: false,
+            savePopupMessage: '',
+            showErrorPopup: false,
+            errorPopupMessage: ''
         };
     },
     computed: {
         calculatedAmounts() {
-            if (this.roundingOption === '') {
-                return {
-                    myShare: '',
-                    theirShare: ''
-                };
-            }
-            const myShare = (this.totalAmount * (this.splitRatio / 100)).toFixed(2);
-            const theirShare = (this.totalAmount * ((100 - this.splitRatio) / 100)).toFixed(2);
+            const myShare = (this.totalAmount * (this.splitRatio / 100));
+            const theirShare = (this.totalAmount * ((100 - this.splitRatio) / 100));
             return {
                 myShare: this.applyRounding(myShare),
                 theirShare: this.applyRounding(theirShare)
@@ -40,39 +36,31 @@ const app = Vue.createApp({
     },
     methods: {
         applyRounding(amount) {
-            let roundedAmount;
-            if (this.roundingOption === 'even') {
-                roundedAmount = Math.round(amount / 100) * 100;
-            } else if (this.roundingOption === 'more') {
-                roundedAmount = Math.ceil(amount / 100) * 100;
-            } else {
-                roundedAmount = Math.floor(amount / 100) * 100;
-            }
-            return roundedAmount;
+            return Math.round(amount / 100) * 100;
         },
         formatCurrency(amount) {
             return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(amount);
         },
         async saveData() {
             if (this.totalAmount <= 0) {
-                this.errorMessage = '合計金額は0円以上でなければなりません';
+                this.showErrorPopup = true;
+                this.errorPopupMessage = '合計金額は0円以上でなければなりません';
                 return;
             }
-            this.errorMessage = '';
             const data = {
                 date: this.date,
                 totalAmount: this.totalAmount,
                 location: this.location,
                 memo: this.memo,
-                splitRatio: this.roundingOption === '' ? '' : this.splitRatio,
-                roundingOption: this.roundingOption,
-                myShare: this.roundingOption === '' ? '' : this.calculatedAmounts.myShare,
-                theirShare: this.roundingOption === '' ? '' : this.calculatedAmounts.theirShare,
+                splitRatio: this.splitRatio,
+                myShare: this.calculatedAmounts.myShare,
+                theirShare: this.calculatedAmounts.theirShare,
                 isSettled: this.isSettled,
-                category: this.category // 追加
+                category: this.category,
+                payer: this.payer
             };
             try {
-                const response = await fetch('/save', {
+                const response = await fetch('/api/save', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -80,24 +68,18 @@ const app = Vue.createApp({
                     body: JSON.stringify(data)
                 });
                 if (response.ok) {
-                    this.saveMessage = 'データが正常に保存されました';
+                    this.showSavePopup = true;
+                    this.savePopupMessage = 'データが正常に保存されました';
                     this.resetForm();
                 } else {
                     const errorText = await response.text();
-                    this.saveMessage = `データの保存中にエラーが発生しました: ${errorText}`;
+                    this.showErrorPopup = true;
+                    this.errorPopupMessage = `データの保存中にエラーが発生しました: ${errorText}`;
                 }
             } catch (error) {
                 console.error('Error saving data:', error);
-                this.saveMessage = `データの保存中にエラーが発生しました: ${error.message}`;
-            }
-        },
-        getRoundingOptionInJapanese() {
-            if (this.roundingOption === 'even') {
-                return '四捨五入';
-            } else if (this.roundingOption === 'more') {
-                return '相手が多め';
-            } else {
-                return '自分が多め';
+                this.showErrorPopup = true;
+                this.errorPopupMessage = `データの保存中にエラーが発生しました: ${error.message}`;
             }
         },
         goToHistory() {
@@ -111,7 +93,7 @@ const app = Vue.createApp({
                 const response = await fetch('/api/check-login');
                 if (response.ok) {
                     const data = await response.json();
-                    this.username = data.username; // ユーザー名を設定
+                    this.username = data.username;
                 } else {
                     this.goToLogin();
                 }
@@ -129,7 +111,7 @@ const app = Vue.createApp({
                     }
                 });
                 if (response.ok) {
-                    window.location.href = '/html/logout.html'; // ログアウト後にログアウト画面に遷移
+                    window.location.href = '/html/logout.html';
                 } else {
                     const errorText = await response.text();
                     console.error(`Error during logout: ${errorText}`);
@@ -145,7 +127,7 @@ const app = Vue.createApp({
                 } catch (error) {
                     console.error('Error keeping session alive:', error);
                 }
-            }, 15 * 60 * 1000); // 15分ごとにリクエストを送信
+            }, 15 * 60 * 1000);
         },
         resetForm() {
             this.myAmount = 0;
@@ -155,18 +137,23 @@ const app = Vue.createApp({
             this.memo = '';
             this.date = new Date().toISOString().split('T')[0];
             this.splitRatio = 50;
-            this.roundingOption = '';
-            this.saveMessage = '';
-            this.errorMessage = '';
-            this.category = ''; // デフォルト値を空白に変更
+            this.category = '';
         },
         toggleOptionalFields() {
             this.showOptionalFields = !this.showOptionalFields;
+        },
+        closeSavePopup() {
+            this.showSavePopup = false;
+            this.savePopupMessage = '';
+        },
+        closeErrorPopup() {
+            this.showErrorPopup = false;
+            this.errorPopupMessage = '';
         }
     },
     mounted() {
         this.checkLogin();
-        this.keepSessionAlive(); // セッションを延長するためのリクエストを開始
+        this.keepSessionAlive();
     }
 });
 
