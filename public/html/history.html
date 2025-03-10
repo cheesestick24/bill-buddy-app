@@ -46,7 +46,11 @@
                             <h5 class=" card-title">{{ formatDate(record.date) }}</h5>
                             <div class="d-flex justify-content-between">
                                 <p class="card-text w-50">合計金額: {{ formatCurrency(record.totalAmount) }}</p>
-                                <p class="card-text w-50">分類: {{ record.category }}</p> <!-- 分類を追加 -->
+                                <p class="card-text w-50">分類: {{ record.category }}</p>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <p class="card-text w-50">相手の金額: {{ formatCurrency(record.theirShare) }}</p>
+                                <p class="card-text w-50">私の金額: {{ formatCurrency(record.myShare) }}</p>
                             </div>
                             <p class="card-text">場所: {{ record.location }}</p>
                             <p class="card-text">精算済み: {{ record.isSettled ? 'はい' : 'いいえ' }}</p>
@@ -56,15 +60,8 @@
             </div>
             <div id="selectedData" class="mt-4">
                 <p>合計金額: <span id="totalAmount">{{ totalAmount }} 円</span></p>
-                <p>わたしの金額: <span id="myShare">{{ myShare }} 円</span></p>
-                <p>相手の金額: <span id="theirShare">{{ theirShare }} 円</span></p>
-                <div class="mb-3">
-                    <label for="splitRatio" class="form-label">割り勘の割合</label>
-                    <input type="range" v-model="splitRatio" class="form-range" id="splitRatio" min="0" max="100"
-                        step="5">
-                    <div>私: {{ splitRatio }}% 相手: {{ (100 - splitRatio) }}%
-                    </div>
-                </div>
+                <p>わたしの合計金額: <span id="myTotalAmount">{{ formatCurrency(myTotalAmount) }}</span></p>
+                <p>相手の合計金額: <span id="theirTotalAmount">{{ formatCurrency(theirTotalAmount) }}</span></p>
             </div>
             <div class="button-container">
                 <button type="button" class="btn btn-secondary" @click="goToHome">ホーム画面に戻る</button>
@@ -86,6 +83,13 @@
                 </p>
                 <button class="btn btn-primary" @click="confirmPopup">はい</button>
                 <button v-if="showNoButton" class="btn btn-secondary" @click="closePopup">いいえ</button>
+            </div>
+        </div>
+        <div v-if="showDeletePopup" class="popup-overlay">
+            <div class="popup">
+                <p>{{ deletePopupMessage }}</p>
+                <button class="btn btn-danger" @click="confirmDeletePopup">はい</button>
+                <button class="btn btn-secondary" @click="closeDeletePopup">いいえ</button>
             </div>
         </div>
     </div>

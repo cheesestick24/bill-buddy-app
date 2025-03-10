@@ -91,7 +91,13 @@ input[type="checkbox"] {
 }
 
 .popup button {
-    margin: 0 10px; /* ボタンの隙間を追加 */
+    margin: 0 10px;
+}
+
+.popup .btn-danger {
+    background-color: red;
+    border-color: red;
+    color: white;
 }
 
 .card-text.w-50 {

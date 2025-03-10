@@ -9,7 +9,9 @@ const historyApp = Vue.createApp({
             confirmAction: null, // 確認アクション
             showNoButton: true, // いいえボタン表示用
             popupDetails: [], // ポップアップに表示する選択データの詳細
-            splitRatio: 50 // 割り勘の割合
+            showDeletePopup: false, // 削除ポップアップ表示用
+            deletePopupMessage: '', // 削除ポップアップメッセージ
+            deleteConfirmAction: null // 削除確認アクション
         };
     },
     async created() {
@@ -46,10 +48,9 @@ const historyApp = Vue.createApp({
                 this.showNoButton = false;
                 return;
             }
-            this.showPopup = true;
-            this.popupMessage = '選択されたデータを削除してもよろしいですか？';
-            this.showNoButton = true;
-            this.confirmAction = async () => {
+            this.showDeletePopup = true;
+            this.deletePopupMessage = '選択されたデータを削除してもよろしいですか？';
+            this.deleteConfirmAction = async () => {
                 try {
                     const response = await fetch('/api/history/bulk-delete', {
                         method: 'POST',
@@ -89,8 +90,7 @@ const historyApp = Vue.createApp({
             this.popupDetails = selectedRecords.map(record => ({
                 date: this.formatDate(record.date),
                 totalAmount: this.formatCurrency(record.totalAmount),
-                location: record.location,
-                splitRatio: record.splitRatio
+                location: record.location
             }));
             this.showPopup = true;
             this.popupMessage = '選択されたデータを精算済みにしてもよろしいですか？';
@@ -158,6 +158,17 @@ const historyApp = Vue.createApp({
                 this.confirmAction();
             }
             this.closePopup();
+        },
+        closeDeletePopup() {
+            this.showDeletePopup = false;
+            this.deletePopupMessage = '';
+            this.deleteConfirmAction = null;
+        },
+        confirmDeletePopup() {
+            if (this.deleteConfirmAction) {
+                this.deleteConfirmAction();
+            }
+            this.closeDeletePopup();
         }
     },
     computed: {
@@ -165,11 +176,13 @@ const historyApp = Vue.createApp({
             const selectedRecords = this.records.filter(record => record.selected);
             return selectedRecords.reduce((sum, record) => sum + parseFloat(record.totalAmount), 0);
         },
-        myShare() {
-            return (Math.round(this.totalAmount * (this.splitRatio / 100) / 100) * 100).toFixed(2);
+        myTotalAmount() {
+            const selectedRecords = this.records.filter(record => record.selected);
+            return selectedRecords.reduce((sum, record) => sum + parseFloat(record.myShare), 0);
         },
-        theirShare() {
-            return (Math.round(this.totalAmount * ((100 - this.splitRatio) / 100) / 100) * 100).toFixed(2);
+        theirTotalAmount() {
+            const selectedRecords = this.records.filter(record => record.selected);
+            return selectedRecords.reduce((sum, record) => sum + parseFloat(record.theirShare), 0);
         },
         filteredRecords() {
             if (this.filterOption === 'unsettled') {
