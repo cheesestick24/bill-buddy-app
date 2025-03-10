@@ -8,13 +8,15 @@ const app = Vue.createApp({
             memo: '',
             date: new Date().toISOString().split('T')[0],
             splitRatio: 50,
-            saveMessage: '',
-            errorMessage: '',
             username: '',
             isSettled: false,
             showOptionalFields: false,
             category: '',
-            payer: 'self'
+            payer: 'self',
+            showSavePopup: false, // 保存ポップアップ表示用
+            savePopupMessage: '', // 保存ポップアップメッセージ
+            showErrorPopup: false, // エラーポップアップ表示用
+            errorPopupMessage: '' // エラーポップアップメッセージ
         };
     },
     computed: {
@@ -41,10 +43,10 @@ const app = Vue.createApp({
         },
         async saveData() {
             if (this.totalAmount <= 0) {
-                this.errorMessage = '合計金額は0円以上でなければなりません';
+                this.showErrorPopup = true;
+                this.errorPopupMessage = '合計金額は0円以上でなければなりません';
                 return;
             }
-            this.errorMessage = '';
             const data = {
                 date: this.date,
                 totalAmount: this.totalAmount,
@@ -66,15 +68,18 @@ const app = Vue.createApp({
                     body: JSON.stringify(data)
                 });
                 if (response.ok) {
-                    this.saveMessage = 'データが正常に保存されました';
+                    this.showSavePopup = true;
+                    this.savePopupMessage = 'データが正常に保存されました';
                     this.resetForm();
                 } else {
                     const errorText = await response.text();
-                    this.saveMessage = `データの保存中にエラーが発生しました: ${errorText}`;
+                    this.showErrorPopup = true;
+                    this.errorPopupMessage = `データの保存中にエラーが発生しました: ${errorText}`;
                 }
             } catch (error) {
                 console.error('Error saving data:', error);
-                this.saveMessage = `データの保存中にエラーが発生しました: ${error.message}`;
+                this.showErrorPopup = true;
+                this.errorPopupMessage = `データの保存中にエラーが発生しました: ${error.message}`;
             }
         },
         goToHistory() {
@@ -132,12 +137,18 @@ const app = Vue.createApp({
             this.memo = '';
             this.date = new Date().toISOString().split('T')[0];
             this.splitRatio = 50;
-            this.saveMessage = '';
-            this.errorMessage = '';
             this.category = '';
         },
         toggleOptionalFields() {
             this.showOptionalFields = !this.showOptionalFields;
+        },
+        closeSavePopup() {
+            this.showSavePopup = false;
+            this.savePopupMessage = '';
+        },
+        closeErrorPopup() {
+            this.showErrorPopup = false;
+            this.errorPopupMessage = '';
         }
     },
     mounted() {

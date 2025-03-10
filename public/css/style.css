@@ -11,7 +11,7 @@ body {
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
-#app {
+.form {
     max-width: 600px;
     margin: auto;
     padding: 20px;
@@ -68,6 +68,7 @@ input[type="checkbox"] {
     padding-top: 10px;
     padding-bottom: 10px;
     border-bottom: 1px solid #dee2e6; /* ヘッダーの下に境界線を追加 */
+    height: 80px; /* ヘッダーの縦幅を固定 */
 }
 
 .popup-overlay {
@@ -97,6 +98,12 @@ input[type="checkbox"] {
 .popup .btn-danger {
     background-color: red;
     border-color: red;
+    color: white;
+}
+
+.popup .btn-primary {
+    background-color: blue;
+    border-color: blue;
     color: white;
 }
 
