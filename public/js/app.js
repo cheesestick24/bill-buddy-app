@@ -45,16 +45,14 @@ const app = Vue.createApp({
                 return;
             }
             this.errorMessage = '';
-            const myShare = this.payer === 'self' ? -this.calculatedAmounts.theirShare : this.calculatedAmounts.myShare;
-            const theirShare = this.payer === 'self' ? this.calculatedAmounts.theirShare : -this.calculatedAmounts.myShare;
             const data = {
                 date: this.date,
                 totalAmount: this.totalAmount,
                 location: this.location,
                 memo: this.memo,
                 splitRatio: this.splitRatio,
-                myShare: myShare,
-                theirShare: theirShare,
+                myShare: this.calculatedAmounts.myShare,
+                theirShare: this.calculatedAmounts.theirShare,
                 isSettled: this.isSettled,
                 category: this.category,
                 payer: this.payer
