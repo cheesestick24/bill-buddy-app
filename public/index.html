@@ -45,24 +45,22 @@
                 </select>
             </div>
             <div class="mb-3">
+                <label for="payer" class="form-label">支払者</label>
+                <select v-model="payer" class="form-select" id="payer">
+                    <option value="self">自分払い</option>
+                    <option value="other">相手払い</option>
+                </select>
+            </div>
+            <div class="mb-3">
                 <button type="button" class="btn btn-link" @click="toggleOptionalFields">
                     オプション項目を{{ showOptionalFields ? '非表示' : '表示' }}にする
                 </button>
             </div>
             <div v-if="showOptionalFields">
                 <div class="mb-3">
-                    <label class="form-label">割合オプション</label>
-                    <select v-model="roundingOption" class="form-select">
-                        <option value="">選択してください</option> <!-- 空白のオプションを追加 -->
-                        <option value="even">四捨五入</option>
-                        <option value="more">相手が多め</option>
-                        <option value="less">自分が多め</option>
-                    </select>
-                </div>
-                <div class="mb-3">
                     <label for="splitRatio" class="form-label">割り勘の割合</label>
                     <input type="range" v-model="splitRatio" class="form-range" id="splitRatio" min="0" max="100"
-                        step="5" :disabled="roundingOption === ''">
+                        step="5">
                     <div>私: {{ splitRatio }}% 相手: {{ 100 - splitRatio }}%</div>
                 </div>
                 <div class="mb-3">

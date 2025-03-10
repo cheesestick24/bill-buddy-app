@@ -12,13 +12,13 @@ CREATE TABLE BillRecords (
     totalAmount DECIMAL(10, 2) NOT NULL,
     location NVARCHAR(255),
     memo NVARCHAR(255),
-    splitRatio INT NULL,
-    roundingOption NVARCHAR(50) NULL,
-    myShare DECIMAL(10, 2) NULL,
-    theirShare DECIMAL(10, 2) NULL,
+    splitRatio INT
+    myShare DECIMAL(10, 2),
+    theirShare DECIMAL(10, 2),
     createdAt DATETIME DEFAULT GETDATE(),
     isSettled BIT DEFAULT 0 NOT NULL,
     category NVARCHAR(255),
+    payer NVARCHAR(50) NOT NULL,
     FOREIGN KEY (userId) REFERENCES Users(id)
 );
 
@@ -31,3 +31,7 @@ CREATE TABLE OTP (
     userAgent NVARCHAR(MAX),
     FOREIGN KEY (userId) REFERENCES Users(id)
 );
+
+UPDATE BillRecords
+SET isSettled = 1
+WHERE id % 2 = 0;
