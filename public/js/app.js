@@ -13,10 +13,10 @@ const app = Vue.createApp({
             showOptionalFields: false,
             category: '',
             payer: 'self',
-            showSavePopup: false, // 保存ポップアップ表示用
-            savePopupMessage: '', // 保存ポップアップメッセージ
-            showErrorPopup: false, // エラーポップアップ表示用
-            errorPopupMessage: '' // エラーポップアップメッセージ
+            showSavePopup: false,
+            savePopupMessage: '',
+            showErrorPopup: false,
+            errorPopupMessage: ''
         };
     },
     computed: {

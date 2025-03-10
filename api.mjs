@@ -112,7 +112,7 @@ router.post('/login', async (req, res) => {
         const user = result.recordset[0];
         if (user) {
             const otp = (Math.floor(100000 + Math.random() * 900000)).toString(); // 6桁の数字
-            const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+            const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10分後
             await pool.request()
                 .input('userId', sql.Int, user.id)
                 .input('otp', sql.NVarChar, otp)
@@ -126,14 +126,14 @@ router.post('/login', async (req, res) => {
                 text: `Your OTP code is ${otp}`
             };
 
-            console.log('Sending email to:', user.email); // 送信先のメールアドレスをログに出力
+            console.log('Sending email to:', user.email);
             transporter.sendMail(mailOptions, (error, info) => {
                 if (error) {
                     console.error('Error sending email:', error);
                     return res.status(500).send(`Error sending OTP email: ${error.message}`);
                 }
-                console.log('Email sent:', info.response); // 送信成功時のレスポンスをログに出力
-                console.log('OTP:', otp); // 開発用に一時的にコンソールに出力
+                console.log('Email sent:', info.response);
+                console.log('OTP:', otp);
                 res.status(200).send('OTP sent to your email');
             });
         } else {
@@ -218,7 +218,7 @@ router.post('/logout', (req, res) => {
             console.error('Error during logout:', err);
             return res.status(500).send(`Error during logout: ${err.message}`);
         }
-        res.redirect('/html/logout.html'); // パスを修正
+        res.redirect('/html/logout.html');
     });
 });
 

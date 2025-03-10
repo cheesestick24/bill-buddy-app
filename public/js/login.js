@@ -3,12 +3,12 @@ const loginApp = Vue.createApp({
         return {
             usernameOrEmail: '',
             errorMessage: '',
-            isLoading: false // ローディング状態を追加
+            isLoading: false
         };
     },
     methods: {
         async sendOtp() {
-            this.isLoading = true; // ローディング状態を有効にする
+            this.isLoading = true;
             try {
                 const response = await fetch('/login', {
                     method: 'POST',
@@ -33,7 +33,7 @@ const loginApp = Vue.createApp({
                 this.errorMessage = 'OTPの送信に失敗しました';
                 document.getElementById('errorMessage').style.display = 'block';
             } finally {
-                this.isLoading = false; // ローディング状態を無効にする
+                this.isLoading = false;
             }
         }
     }
@@ -46,7 +46,6 @@ document.getElementById('loginForm').addEventListener('submit', function (event)
     appInstance.sendOtp();
 });
 
-// 新規登録ボタンの無効化を追加
 document.getElementById('registerButton').addEventListener('click', function (event) {
     if (appInstance.isLoading) {
         event.preventDefault();
