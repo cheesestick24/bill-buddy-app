@@ -1,6 +1,6 @@
 import express from 'express';
 import sql from 'mssql';
-import { config } from './database'; // Assuming you have a database module
+import { config } from './database/database.mjs';
 
 const router = express.Router();
 
@@ -24,7 +24,7 @@ router.post('/save', async (req, res) => {
     if (!req.session.userId) {
         return res.status(401).send('Unauthorized');
     }
-    const { date, totalAmount, location, memo, splitRatio, roundingOption, myShare, theirShare, isSettled, category, payer } = req.body;
+    const { date, totalAmount, location, memo, splitRatio, myShare, theirShare, isSettled, category, payer } = req.body;
     try {
         const pool = await sql.connect(config);
         await pool.request()
@@ -34,15 +34,14 @@ router.post('/save', async (req, res) => {
             .input('location', sql.NVarChar, location)
             .input('memo', sql.NVarChar, memo)
             .input('splitRatio', sql.Int, splitRatio || null)
-            .input('roundingOption', sql.NVarChar, roundingOption || null)
             .input('myShare', sql.Decimal(10, 2), myShare || null)
             .input('theirShare', sql.Decimal(10, 2), theirShare || null)
             .input('isSettled', sql.Bit, isSettled)
             .input('category', sql.NVarChar, category)
             .input('payer', sql.NVarChar, payer)
             .query(`
-                INSERT INTO BillRecords (userId, date, totalAmount, location, memo, splitRatio, roundingOption, myShare, theirShare, isSettled, category, payer)
-                VALUES (@userId, @date, @totalAmount, @location, @memo, @splitRatio, @roundingOption, @myShare, @theirShare, @isSettled, @category, @payer)
+                INSERT INTO BillRecords (userId, date, totalAmount, location, memo, splitRatio, myShare, theirShare, isSettled, category, payer)
+                VALUES (@userId, @date, @totalAmount, @location, @memo, @splitRatio, @myShare, @theirShare, @isSettled, @category, @payer)
             `);
         res.status(200).send('Data saved successfully');
     } catch (err) {

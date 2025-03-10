@@ -60,7 +60,7 @@ const app = Vue.createApp({
                 payer: this.payer
             };
             try {
-                const response = await fetch('/save', {
+                const response = await fetch('/api/save', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

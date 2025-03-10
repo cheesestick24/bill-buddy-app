@@ -5,6 +5,7 @@ import sql from 'mssql';
 import session from 'express-session';
 import dotenv from 'dotenv';
 import apiRouter from './api.mjs'; // API関連のルートをインポート
+import { config } from './database/database.mjs'; // configのインポートを追加
 
 dotenv.config();
 
@@ -13,17 +14,6 @@ const PORT = process.env.PORT || 3000;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const config = {
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    server: process.env.DB_SERVER,
-    database: process.env.DB_DATABASE,
-    options: {
-        encrypt: true,
-        enableArithAbort: true
-    }
-};
 
 sql.connect(config).then(pool => {
     if (pool.connected) {
@@ -82,7 +72,12 @@ app.get('/otp', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'html/otp.html'));
 });
 
-app.use('/api', apiRouter); // API関連のルートを使用
+app.use('/api', (req, res, next) => {
+    if (!req.session.userId) {
+        return res.status(401).send('Unauthorized');
+    }
+    next();
+}, apiRouter); // API関連のルートを使用
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

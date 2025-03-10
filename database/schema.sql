@@ -12,7 +12,7 @@ CREATE TABLE BillRecords (
     totalAmount DECIMAL(10, 2) NOT NULL,
     location NVARCHAR(255),
     memo NVARCHAR(255),
-    splitRatio INT
+    splitRatio INT,
     myShare DECIMAL(10, 2),
     theirShare DECIMAL(10, 2),
     createdAt DATETIME DEFAULT GETDATE(),
