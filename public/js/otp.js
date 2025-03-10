@@ -32,7 +32,6 @@ const otpApp = Vue.createApp({
     mounted() {
         const params = new URLSearchParams(window.location.search);
         this.usernameOrEmail = params.get('usernameOrEmail');
-        // Remove email from URL
         params.delete('usernameOrEmail');
         const newUrl = `${window.location.pathname}?${params.toString()}`;
         window.history.replaceState({}, '', newUrl);

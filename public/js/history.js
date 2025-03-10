@@ -3,15 +3,15 @@ const historyApp = Vue.createApp({
         return {
             records: [],
             isSettled: false,
-            filterOption: 'unsettled', // 追加
-            showPopup: false, // ポップアップ表示用
-            popupMessage: '', // ポップアップメッセージ
-            confirmAction: null, // 確認アクション
-            showNoButton: true, // いいえボタン表示用
-            popupDetails: [], // ポップアップに表示する選択データの詳細
-            showDeletePopup: false, // 削除ポップアップ表示用
-            deletePopupMessage: '', // 削除ポップアップメッセージ
-            deleteConfirmAction: null // 削除確認アクション
+            filterOption: 'unsettled',
+            showPopup: false,
+            popupMessage: '',
+            confirmAction: null,
+            showNoButton: true,
+            popupDetails: [],
+            showDeletePopup: false,
+            deletePopupMessage: '',
+            deleteConfirmAction: null
         };
     },
     async created() {
@@ -40,7 +40,7 @@ const historyApp = Vue.createApp({
                 return;
             }
             const idsToDelete = selectedRecords
-                .filter(record => !record.isSettled) // 精算済みのレコードを除外
+                .filter(record => !record.isSettled)
                 .map(record => record.id);
             if (idsToDelete.length === 0) {
                 this.showPopup = true;
@@ -111,7 +111,7 @@ const historyApp = Vue.createApp({
                                 record.isSettled = true;
                             }
                         });
-                        this.deselectAll(); // 追加: すべての選択状態をリセット
+                        this.deselectAll();
                     } else {
                         const errorText = await response.text();
                         this.showPopup = true;

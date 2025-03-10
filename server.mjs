@@ -4,8 +4,8 @@ import { fileURLToPath } from 'url';
 import sql from 'mssql';
 import session from 'express-session';
 import dotenv from 'dotenv';
-import apiRouter from './api.mjs'; // API関連のルートをインポート
-import { config } from './database/database.mjs'; // configのインポートを追加
+import apiRouter from './api.mjs';
+import { config } from './database/database.mjs';
 
 dotenv.config();
 
@@ -77,7 +77,7 @@ app.use('/api', (req, res, next) => {
         return res.status(401).send('Unauthorized');
     }
     next();
-}, apiRouter); // API関連のルートを使用
+}, apiRouter);
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
