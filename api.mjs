@@ -99,7 +99,7 @@ router.post('/login', async (req, res) => {
         const user = result.recordset[0];
         if (user) {
             // パスワードのハッシュと比較
-            const isMatch = await bcrypt.compare(password, user.password);
+            const isMatch = await bcrypt.compare(password, user.passwordHash);
             if (isMatch) {
                 req.session.userId = user.id;
                 console.log('User logged in:', user.id);

@@ -1,7 +1,7 @@
 const loginApp = Vue.createApp({
     data() {
         return {
-            email: '',
+            usernameOrEmail: '',
             password: '',
             errorMessage: '',
             isLoading: false
@@ -18,7 +18,7 @@ const loginApp = Vue.createApp({
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        email: this.email,
+                        usernameOrEmail: this.usernameOrEmail,
                         password: this.password
                     })
                 });
