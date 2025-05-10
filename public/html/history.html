@@ -37,12 +37,13 @@
             </div>
             <div class="row">
                 <div class="col-md-4 mb-3" v-for="record in filteredRecords" :key="record.id">
-                    <div class="card" :class="{ 'selected-card': record.selected }" @click="toggleSelection(record)">
+                    <div class="card" :class="{ 'selected-card': record.selected, 'settled-card': record.isSettled }"
+                        @click="toggleSelection(record)">
                         <div class="card-body">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" v-model="record.selected">
                             </div>
-                            <h5 class=" card-title">{{ formatDate(record.date) }}</h5>
+                            <h5 class="card-title">{{ formatDate(record.date) }}</h5>
                             <div class="d-flex justify-content-between">
                                 <p class="card-text w-50">合計金額: {{ formatCurrency(record.totalAmount) }}</p>
                                 <p class="card-text w-50">分類: {{ record.category }}</p>

@@ -157,6 +157,7 @@ const historyApp = Vue.createApp({
             if (this.confirmAction) {
                 this.confirmAction();
             }
+            this.deselectAll();
             this.closePopup();
         },
         closeDeletePopup() {
