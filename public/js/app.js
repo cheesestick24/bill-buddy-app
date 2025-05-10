@@ -130,14 +130,15 @@ const app = Vue.createApp({
             }, 15 * 60 * 1000);
         },
         resetForm() {
-            this.myAmount = 0;
-            this.theirAmount = 0;
+            this.date = new Date().toISOString().split('T')[0];
             this.totalAmount = 0;
             this.location = '';
             this.memo = '';
-            this.date = new Date().toISOString().split('T')[0];
-            this.splitRatio = 50;
             this.category = '';
+            this.payer = 'self';
+            this.myAmount = 0;
+            this.theirAmount = 0;
+            this.splitRatio = 50;
         },
         toggleOptionalFields() {
             this.showOptionalFields = !this.showOptionalFields;
