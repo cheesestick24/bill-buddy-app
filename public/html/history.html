@@ -59,7 +59,7 @@
                 </div>
             </div>
             <div id="selectedData" class="mt-4">
-                <p>合計金額: <span id="totalAmount">{{ totalAmount }} 円</span></p>
+                <p>合計金額: <span id="totalAmount">{{ formatCurrency(totalAmount) }}</span></p>
                 <p>わたしの合計金額: <span id="myTotalAmount">{{ formatCurrency(myTotalAmount) }}</span></p>
                 <p>相手の合計金額: <span id="theirTotalAmount">{{ formatCurrency(theirTotalAmount) }}</span></p>
             </div>
