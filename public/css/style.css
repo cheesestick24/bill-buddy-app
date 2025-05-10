@@ -35,7 +35,6 @@ input[type="checkbox"] {
     display: flex;
     justify-content: space-between;
     margin-top: 20px;
-    margin-bottom: 100px;
 }
 
 .selected-card {

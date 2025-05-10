@@ -26,5 +26,5 @@ CREATE TABLE BillRecords (
 );
 
 UPDATE BillRecords
-SET isSettled = 1
+SET isSettled = 0
 WHERE id % 2 = 0;
