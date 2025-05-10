@@ -27,8 +27,8 @@
                 </div>
             </div>
         </div>
-        <div class="container mt-4">
-            <div class="d-flex justify-content-between mb-4">
+        <div class="container mt-3">
+            <div class="d-flex justify-content-between mb-3">
                 <select v-model="filterOption" class="form-select me-2">
                     <option value="unsettled">未精算</option>
                     <option value="settled">精算済み</option>
@@ -36,7 +36,7 @@
                 </select>
             </div>
             <div class="row">
-                <div class="col-md-4 mb-3" v-for="record in filteredRecords" :key="record.id">
+                <div class="col-md-4 mb-3" v-for="record in paginatedRecords" :key="record.id">
                     <div class="card" :class="{ 'selected-card': record.selected, 'settled-card': record.isSettled }"
                         @click="toggleSelection(record)">
                         <div class="card-body">
@@ -57,6 +57,13 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="pagination-container mt-4">
+                <button class="btn btn-secondary" :disabled="currentPage === 1"
+                    @click="changePage(currentPage - 1)">前へ</button>
+                <span>ページ {{ currentPage }} / {{ totalPages }}</span>
+                <button class="btn btn-secondary" :disabled="currentPage === totalPages"
+                    @click="changePage(currentPage + 1)">次へ</button>
             </div>
             <div id="selectedData" class="mt-4">
                 <p>合計金額: <span id="totalAmount">{{ formatCurrency(totalAmount) }}</span></p>

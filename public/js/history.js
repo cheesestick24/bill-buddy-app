@@ -11,7 +11,9 @@ const historyApp = Vue.createApp({
             popupDetails: [],
             showDeletePopup: false,
             deletePopupMessage: '',
-            deleteConfirmAction: null
+            deleteConfirmAction: null,
+            currentPage: 1,
+            itemsPerPage: 9
         };
     },
     async created() {
@@ -170,6 +172,11 @@ const historyApp = Vue.createApp({
                 this.deleteConfirmAction();
             }
             this.closeDeletePopup();
+        },
+        changePage(page) {
+            if (page > 0 && page <= this.totalPages) {
+                this.currentPage = page;
+            }
         }
     },
     computed: {
@@ -194,8 +201,16 @@ const historyApp = Vue.createApp({
                 return this.records;
             }
         },
+        paginatedRecords() {
+            const start = (this.currentPage - 1) * this.itemsPerPage;
+            const end = start + this.itemsPerPage;
+            return this.filteredRecords.slice(start, end);
+        },
         isAnySelected() {
             return this.filteredRecords.some(record => record.selected);
+        },
+        totalPages() {
+            return Math.ceil(this.filteredRecords.length / this.itemsPerPage);
         }
     }
 });
