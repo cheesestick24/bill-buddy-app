@@ -77,7 +77,8 @@
                         }} -
                         {{ detail.location }}</li>
                 </ul>
-                <p v-if="popupDetails.length > 0">金額: {{ formatCurrency(myShare) }} / {{ formatCurrency(theirShare)
+                <p v-if="popupDetails.length > 0">金額: {{ formatCurrency(myTotalAmount) }} / {{
+                    formatCurrency(theirTotalAmount)
                     }}
                 </p>
                 <button class="btn btn-primary" @click="confirmPopup">はい</button>

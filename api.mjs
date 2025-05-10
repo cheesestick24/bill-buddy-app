@@ -175,7 +175,7 @@ router.post('/logout', (req, res) => {
             console.error('Error during logout:', err);
             return res.status(500).send(`Error during logout: ${err.message}`);
         }
-        res.redirect('/html/logout.html');
+        res.status(200).send('Logout successful');
     });
 });
 
