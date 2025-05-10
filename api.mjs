@@ -1,13 +1,12 @@
 import express from 'express';
 import sql from 'mssql';
+import bcrypt from 'bcrypt';
 import { config } from './database/database.mjs';
 
 const router = express.Router();
+const SALT_ROUNDS = 10;
 
 router.get('/history', async (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).send('Unauthorized');
-    }
     try {
         const pool = await sql.connect(config);
         const result = await pool.request()
@@ -21,9 +20,6 @@ router.get('/history', async (req, res) => {
 });
 
 router.post('/save', async (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).send('Unauthorized');
-    }
     const { date, totalAmount, location, memo, splitRatio, myShare, theirShare, isSettled, category, payer } = req.body;
     try {
         const pool = await sql.connect(config);
@@ -51,9 +47,6 @@ router.post('/save', async (req, res) => {
 });
 
 router.delete('/history/:id', async (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).send('Unauthorized');
-    }
     const { id } = req.params;
     try {
         const pool = await sql.connect(config);
@@ -69,9 +62,6 @@ router.delete('/history/:id', async (req, res) => {
 });
 
 router.post('/history/bulk-delete', async (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).send('Unauthorized');
-    }
     const { ids } = req.body;
     try {
         const pool = await sql.connect(config);
@@ -86,9 +76,6 @@ router.post('/history/bulk-delete', async (req, res) => {
 });
 
 router.post('/history/mark-as-settled', async (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).send('Unauthorized');
-    }
     const { ids } = req.body;
     try {
         const pool = await sql.connect(config);
@@ -103,7 +90,7 @@ router.post('/history/mark-as-settled', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-    const { usernameOrEmail } = req.body;
+    const { usernameOrEmail, password } = req.body;
     try {
         const pool = await sql.connect(config);
         const result = await pool.request()
@@ -111,33 +98,17 @@ router.post('/login', async (req, res) => {
             .query('SELECT * FROM Users WHERE username = @usernameOrEmail OR email = @usernameOrEmail');
         const user = result.recordset[0];
         if (user) {
-            const otp = (Math.floor(100000 + Math.random() * 900000)).toString(); // 6桁の数字
-            const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10分後
-            await pool.request()
-                .input('userId', sql.Int, user.id)
-                .input('otp', sql.NVarChar, otp)
-                .input('expiresAt', sql.DateTime, expiresAt)
-                .query('INSERT INTO OTP (userId, otp, expiresAt) VALUES (@userId, @otp, @expiresAt)');
-
-            const mailOptions = {
-                from: process.env.EMAIL_USER,
-                to: user.email,
-                subject: 'Your OTP Code',
-                text: `Your OTP code is ${otp}`
-            };
-
-            console.log('Sending email to:', user.email);
-            transporter.sendMail(mailOptions, (error, info) => {
-                if (error) {
-                    console.error('Error sending email:', error);
-                    return res.status(500).send(`Error sending OTP email: ${error.message}`);
-                }
-                console.log('Email sent:', info.response);
-                console.log('OTP:', otp);
-                res.status(200).send('OTP sent to your email');
-            });
+            // パスワードのハッシュと比較
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (isMatch) {
+                req.session.userId = user.id;
+                console.log('User logged in:', user.id);
+                res.status(200).send('Login successful');
+            } else {
+                res.status(401).send('Invalid username, email, or password');
+            }
         } else {
-            res.status(404).send('User not found, please register');
+            res.status(404).send('User not found');
         }
     } catch (err) {
         console.error('Error during login:', err);
@@ -145,49 +116,35 @@ router.post('/login', async (req, res) => {
     }
 });
 
-router.post('/verify-otp', async (req, res) => {
-    const { usernameOrEmail, otp } = req.body;
-    try {
-        const pool = await sql.connect(config);
-        const result = await pool.request()
-            .input('usernameOrEmail', sql.NVarChar, usernameOrEmail)
-            .query('SELECT * FROM Users WHERE username = @usernameOrEmail OR email = @usernameOrEmail');
-        const user = result.recordset[0];
-        if (user) {
-            const otpResult = await pool.request()
-                .input('userId', sql.Int, user.id)
-                .input('otp', sql.NVarChar, otp)
-                .query('SELECT * FROM OTP WHERE userId = @userId AND otp = @otp AND expiresAt > GETDATE()');
-            if (otpResult.recordset.length > 0) {
-                req.session.userId = user.id;
-                res.status(200).send('Login successful');
-            } else {
-                res.status(401).send('Invalid or expired OTP');
-            }
-        } else {
-            res.status(401).send('Invalid username or email');
-        }
-    } catch (err) {
-        console.error('Error during OTP verification:', err);
-        res.status(500).send(`Error during OTP verification: ${err.message}`);
-    }
-});
-
 router.post('/register', async (req, res) => {
-    const { username, email } = req.body;
-    if (!username || !email) {
-        return res.status(400).send('Username and email are required');
+    const { username, email, password } = req.body;
+    if (!username || !email || !password) {
+        return res.status(400).send('Username, email, and password are required');
     }
     try {
         const pool = await sql.connect(config);
+
+        // ユーザー名またはメールアドレスの重複を確認
+        const existingUser = await pool.request()
+            .input('username', sql.NVarChar, username)
+            .input('email', sql.NVarChar, email)
+            .query('SELECT * FROM Users WHERE username = @username OR email = @email');
+
+        if (existingUser.recordset.length > 0) {
+            return res.status(409).send('Username or email already exists'); // HTTP 409 Conflict
+        }
+
+        // パスワードをハッシュ化して新規ユーザーを登録
+        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
         const result = await pool.request()
             .input('username', sql.NVarChar, username)
             .input('email', sql.NVarChar, email)
-            .query('INSERT INTO Users (username, email) OUTPUT INSERTED.id VALUES (@username, @email)');
+            .input('passwordHash', sql.NVarChar, hashedPassword)
+            .query('INSERT INTO Users (username, email, passwordHash) OUTPUT INSERTED.id VALUES (@username, @email, @passwordHash)');
 
         const userId = result.recordset[0].id;
         req.session.userId = userId;
-        res.status(200).send('User registered and logged in successfully');
+        res.status(200).send('User registered successfully');
     } catch (err) {
         console.error('Error during registration:', err);
         res.status(500).send(`Error during registration: ${err.message}`);

@@ -1,37 +1,41 @@
 const loginApp = Vue.createApp({
     data() {
         return {
-            usernameOrEmail: '',
+            email: '',
+            password: '',
             errorMessage: '',
             isLoading: false
         };
     },
     methods: {
-        async sendOtp() {
+        async login() {
             this.isLoading = true;
+            this.errorMessage = ''; // エラーメッセージをリセット
             try {
-                const response = await fetch('/login', {
+                const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ usernameOrEmail: this.usernameOrEmail })
+                    body: JSON.stringify({
+                        email: this.email,
+                        password: this.password
+                    })
                 });
                 if (response.ok) {
-                    console.log('OTP sent successfully');
-                    window.location.href = `/otp?usernameOrEmail=${encodeURIComponent(this.usernameOrEmail)}`;
+                    console.log('Login successful');
+                    window.location.href = '/html/history.html'; // ログイン成功後のリダイレクト先
+                } else if (response.status === 401) {
+                    this.errorMessage = 'メールアドレスまたはパスワードが正しくありません';
                 } else if (response.status === 404) {
-                    console.log('User not found, redirecting to register');
-                    window.location.href = '/register';
+                    this.errorMessage = 'ユーザーが見つかりません。新規登録してください';
                 } else {
                     const errorText = await response.text();
-                    this.errorMessage = `OTPの送信に失敗しました: ${errorText}`;
-                    document.getElementById('errorMessage').style.display = 'block';
+                    this.errorMessage = `ログインに失敗しました: ${errorText}`;
                 }
             } catch (error) {
-                console.error('Error during OTP sending:', error);
-                this.errorMessage = 'OTPの送信に失敗しました';
-                document.getElementById('errorMessage').style.display = 'block';
+                console.error('Error during login:', error);
+                this.errorMessage = 'ログインに失敗しました';
             } finally {
                 this.isLoading = false;
             }
@@ -43,11 +47,5 @@ const appInstance = loginApp.mount('#login');
 
 document.getElementById('loginForm').addEventListener('submit', function (event) {
     event.preventDefault();
-    appInstance.sendOtp();
-});
-
-document.getElementById('registerButton').addEventListener('click', function (event) {
-    if (appInstance.isLoading) {
-        event.preventDefault();
-    }
+    appInstance.login();
 });
